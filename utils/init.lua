@@ -1,7 +1,9 @@
 local wezterm = require("wezterm")
 
+---@alias ConfigOption table
+
 ---@class ConfigBuilder
----@field options Config
+---@field private options table
 local Config = {}
 Config.__index = Config
 
@@ -18,6 +20,11 @@ end
 function Config:with(opt)
 	opt:apply(self.options)
 	return self
+end
+
+--- Return the wezterm configuration builder under management
+function Config:configure()
+	return self.options
 end
 
 return Config

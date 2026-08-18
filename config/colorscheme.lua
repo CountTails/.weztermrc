@@ -14,7 +14,7 @@ function Colors:new(colors)
 end
 
 --- Apply the colors options to the configuration manager
----@param cfg Config
+---@param cfg table
 function Colors:apply(cfg)
 	local availableSchemes = wezterm.color.get_builtin_schemes()
 	if availableSchemes[self.scheme] == nil then

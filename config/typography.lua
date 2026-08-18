@@ -16,7 +16,7 @@ function FontOption:new(sz, name)
 end
 
 --- Apply the font options to the configuration manager
----@param cfg Config
+---@param cfg table
 function FontOption:apply(cfg)
 	local fontobj = wezterm.font(self.family)
 	local fontsz = self.size
