@@ -1,6 +1,3 @@
-local wezterm = require("wezterm")
-local options = require("utils.options").appearance.cursor
-
 ---@class CursorOption
 ---@field style string the style of the cursor to use
 ---@field blink_rate integer the blink rate of the cursor in ms
@@ -34,11 +31,4 @@ function CursorOption:apply(cfg)
 	cfg.cursor_blink_ease_out = self.blink_ease_out_fn
 end
 
-local M = {}
-
----@return CursorOption
-M.init = function()
-	return CursorOption:new(options.style, options.blink.rate, options.blink.ease_in, options.blink.ease_out)
-end
-
-return M
+return CursorOption

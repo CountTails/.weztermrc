@@ -1,5 +1,4 @@
 local wezterm = require("wezterm")
-local options = require("utils.options").appearance.colors
 
 ---@class ColorsOption
 ---@field scheme string name of the colorscheme to use
@@ -24,16 +23,4 @@ function ColorsOption:apply(cfg)
 	cfg.color_scheme = self.scheme
 end
 
-local M = {}
-
----@return ColorsOption
-M.init = function()
-	if wezterm.gui then
-		if wezterm.gui.get_appearance():find("Light") then
-			return ColorsOption:new(options.scheme.light_mode)
-		end
-	end
-	return ColorsOption:new(options.scheme.dark_mode)
-end
-
-return M
+return ColorsOption

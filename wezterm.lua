@@ -1,8 +1,9 @@
 local config = require("utils.init")
+local settings = require("config.setup")
 
 return config
 	:init()
-	:with(require("config.typography").init())
-	:with(require("config.colorscheme").init())
-	:with(require("config.cursor").init())
+	:with(settings.custom_colorscheme())
+	:with(settings.custom_typeface())
+	:with(settings.custom_cursor_behavior())
 	:configure()
