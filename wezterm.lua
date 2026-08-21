@@ -2,7 +2,7 @@ local config = require("utils.init")
 
 return config
 	:init()
-	:with(require("config.typography"):new(20, "CommitMono Nerd Font Mono"))
-	:with(require("config.colorscheme"):new("Catppuccin Mocha"))
-	:with(require("config.cursor"):new("BlinkingBar", 750, "Ease", "Linear"))
+	:with(require("config.typography").init())
+	:with(require("config.colorscheme").init())
+	:with(require("config.cursor").init())
 	:configure()

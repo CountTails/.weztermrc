@@ -1,4 +1,5 @@
 local wezterm = require("wezterm")
+local options = require("utils.options").appearance.font
 
 ---@class FontOption
 ---@field size integer size of the font (in pt) to use
@@ -29,4 +30,11 @@ function FontOption:apply(cfg)
 	cfg.font_size = fontsz
 end
 
-return FontOption
+local M = {}
+
+---@return FontOption
+M.init = function()
+	return FontOption:new(options.size, options.family)
+end
+
+return M
