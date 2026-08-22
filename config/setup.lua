@@ -4,6 +4,7 @@ local options = require("utils.options")
 local ColorsOption = require("config.colorscheme")
 local CursorOption = require("config.cursor")
 local FontOption = require("config.typography")
+local WindowOptions = require("config.window")
 
 local M = {}
 
@@ -31,6 +32,13 @@ end
 M.custom_cursor_behavior = function()
 	local cursor = options.appearance.cursor
 	return CursorOption:new(cursor.style, cursor.blink.rate, cursor.blink.ease_in, cursor.blink.ease_out)
+end
+
+--- Creates the appropriate `WindowOptions` instance to configure the way the window looks in the wezterm GUI
+---@return WindowOptions
+M.custom_window_options = function()
+	local window = options.window
+	return WindowOptions:new(window)
 end
 
 return M
