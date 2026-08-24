@@ -34,24 +34,22 @@ M.window = {
 		vertical = "Center",
 	},
 	close_confirmation = "NeverPrompt",
-	frames = {
-		dark_mode = {
-			border_left_width = "1cell",
-			border_right_width = "1cell",
-			border_bottom_height = "0.5cell",
-			border_top_height = "0.0cell",
-			border_bottom_color = "#11111b",
-			border_left_color = "#11111b",
-			border_right_color = "#11111b",
-		},
-		light_mode = {
-			border_left_width = "1cell",
-			border_right_width = "1cell",
-			border_bottom_height = "0.5cell",
-			border_top_height = "0.0cell",
-			border_bottom_color = "#dce0e8",
-			border_left_color = "#dce0e8",
-			border_right_color = "#dce0e8",
+	border = {
+		border_left_width = "1cell",
+		border_right_width = "1cell",
+		border_bottom_height = "0.5cell",
+		border_top_height = "0.0cell",
+		scheme = {
+			light_mode = {
+				border_bottom_color = "#dce0e8",
+				border_left_color = "#dce0e8",
+				border_right_color = "#dce0e8",
+			},
+			dark_mode = {
+				border_bottom_color = "#11111b",
+				border_left_color = "#11111b",
+				border_right_color = "#11111b",
+			},
 		},
 	},
 }

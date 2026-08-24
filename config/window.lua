@@ -1,11 +1,8 @@
 local wezterm = require("wezterm")
+local theme = require("utils.theme")
 
 ---@class WindowOptions
----@field padding table controls that amount of padding between the window border and the terminal cells
----@field decorations string configures whether the window has a title bar and/or resizeable border
----@field content_alignment table controls the alignment of the terminal cells inside the window (nightly build required)
----@field close_confirmation string configures whether to display a confirmation prompt when the window is closed
----@field frames table customize colors of the window frame
+---@field options table options that fit under the `window_frame` portion of the wezterm configuration
 local WindowOptions = {}
 WindowOptions.__index = WindowOptions
 
@@ -14,11 +11,7 @@ WindowOptions.__index = WindowOptions
 ---@return WindowOptions
 function WindowOptions:new(opts)
 	local config = setmetatable({
-		padding = opts.padding,
-		decorations = opts.decorations,
-		content_alignment = opts.content_alignment,
-		close_confirmation = opts.close_confirmation,
-		frames = opts.frames,
+		options = opts,
 	}, self)
 	return config
 end
@@ -26,17 +19,41 @@ end
 --- Apply the `WindowOptions` to the configuration manager
 ---@param cfg table
 function WindowOptions:apply(cfg)
-	cfg.window_close_confirmation = self.close_confirmation
-	cfg.window_content_alignment = self.content_alignment
-	cfg.window_decorations = self.decorations
-	cfg.window_padding = self.padding
-	if wezterm.gui then
-		if wezterm.gui.get_appearance():find("Light") then
-			cfg.window_frame = self.frames.light_mode
-		else
-			cfg.window_frame = self.frames.dark_mode
-		end
+	cfg.window_frame = self:derive_frame_options()
+	self:configure_window_options(cfg)
+end
+
+--- Helper function to derive the `window_frame` configuration option from the provided window options
+---@return table
+---@private
+function WindowOptions:derive_frame_options()
+	local window_frame = {}
+	window_frame.border_left_width = self.options.border.border_left_width
+	window_frame.border_right_width = self.options.border.border_right_width
+	window_frame.border_top_height = self.options.border.border_top_height
+	window_frame.border_bottom_height = self.options.border.border_bottom_height
+
+	if theme.active_window_theme() == theme.LIGHT_MODE then
+		window_frame.border_bottom_color = self.options.border.scheme.light_mode.border_bottom_color
+		window_frame.border_left_color = self.options.border.scheme.light_mode.border_left_color
+		window_frame.border_right_color = self.options.border.scheme.light_mode.border_right_color
+	else
+		window_frame.border_bottom_color = self.options.border.scheme.dark_mode.border_bottom_color
+		window_frame.border_left_color = self.options.border.scheme.dark_mode.border_left_color
+		window_frame.border_right_color = self.options.border.scheme.dark_mode.border_right_color
 	end
+
+	return window_frame
+end
+
+--- Helper function to derive window configuration option from the provide window options
+---@param cfg table
+---@private
+function WindowOptions:configure_window_options(cfg)
+	cfg.window_close_confirmation = self.options.close_confirmation
+	cfg.window_content_alignment = self.options.content_alignment
+	cfg.window_decorations = self.options.decorations
+	cfg.window_padding = self.options.padding
 end
 
 return WindowOptions
