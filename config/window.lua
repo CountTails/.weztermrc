@@ -32,6 +32,8 @@ function WindowOptions:derive_frame_options()
 	window_frame.border_right_width = self.options.border.border_right_width
 	window_frame.border_top_height = self.options.border.border_top_height
 	window_frame.border_bottom_height = self.options.border.border_bottom_height
+	window_frame.font = wezterm.font(self.options.font.family)
+	window_frame.font_size = self.options.font.size
 
 	if theme.active_window_theme() == theme.LIGHT_MODE then
 		window_frame.border_bottom_color = self.options.border.scheme.light_mode.border_bottom_color

@@ -52,6 +52,10 @@ M.window = {
 			},
 		},
 	},
+	font = {
+		size = 14,
+		family = "Monaco",
+	},
 }
 
 return M
