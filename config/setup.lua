@@ -1,5 +1,5 @@
-local wezterm = require("wezterm")
 local options = require("utils.options")
+local theme = require("utils.theme")
 
 local ColorsOption = require("config.colorscheme")
 local CursorOption = require("config.cursor")
@@ -12,10 +12,8 @@ local M = {}
 ---@return ColorsOption
 M.custom_colorscheme = function()
 	local colors = options.appearance.colors
-	if wezterm.gui then
-		if wezterm.gui.get_appearance():find("Light") then
-			return ColorsOption:new(colors.scheme.light_mode)
-		end
+	if theme.active_window_theme() == theme.LIGHT_MODE then
+		return ColorsOption:new(colors.scheme.light_mode)
 	end
 	return ColorsOption:new(colors.scheme.dark_mode)
 end
