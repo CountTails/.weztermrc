@@ -26,7 +26,7 @@ M.window = {
 		left = "1cell",
 		right = "1cell",
 		top = 0,
-		bottom = 0,
+		bottom = "1cell",
 	},
 	decorations = "TITLE | RESIZE",
 	content_alignment = {
