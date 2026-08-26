@@ -58,4 +58,36 @@ M.window = {
 	},
 }
 
+M.process_spawning = {
+	apple = {
+		binary_lookup = { "/opt/homebrew/bin", "/bin", "/usr/bin", "/usr/local/bin" },
+		apps = {
+			{
+				args = { "zsh", "-l" },
+				label = "Zsh",
+			},
+			{
+				args = { "bash", "-l" },
+				label = "Bash",
+			},
+			{
+				args = { "python3" },
+				label = "Python 3",
+			},
+			{
+				args = { "node" },
+				label = "NodeJS",
+			},
+			{
+				args = { "lua" },
+				label = "Lua",
+			},
+			{
+				args = { "htop" },
+				label = "HTOP",
+			},
+		},
+	},
+}
+
 return M
