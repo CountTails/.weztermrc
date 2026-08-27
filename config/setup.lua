@@ -1,10 +1,13 @@
+local wezterm = require("wezterm")
 local options = require("utils.options")
 local theme = require("utils.theme")
+local platform = require("utils.platform")
 
 local ColorsOption = require("config.colorscheme")
 local CursorOption = require("config.cursor")
 local FontOption = require("config.typography")
 local WindowOptions = require("config.window")
+local LauncherOptions = require("config.launch")
 
 local M = {}
 
@@ -37,6 +40,20 @@ end
 M.custom_window_options = function()
 	local window = options.window
 	return WindowOptions:new(window)
+end
+
+--- Creates the appropriate `LauncherOptions` instance to configure the items included in the launcher menu
+M.custom_launch_menu = function()
+	local launcher = options.process_spawning
+	if platform.is_mac() then
+		return LauncherOptions:new(launcher.apple)
+	elseif platform.is_linux() then
+		return LauncherOptions:new(launcher.linux)
+	elseif platform.is_win() then
+		return LauncherOptions:new(launcher.windows)
+	else
+		error("custom launch menu: unrecognized platform: " .. wezterm.target_triple)
+	end
 end
 
 return M

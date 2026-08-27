@@ -61,7 +61,7 @@ M.window = {
 M.process_spawning = {
 	apple = {
 		binary_lookup = { "/opt/homebrew/bin", "/bin", "/usr/bin", "/usr/local/bin" },
-		apps = {
+		menu_entries = {
 			{
 				args = { "zsh", "-l" },
 				label = "Zsh",

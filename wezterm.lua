@@ -7,4 +7,5 @@ return config
 	:with(settings.custom_typeface())
 	:with(settings.custom_cursor_behavior())
 	:with(settings.custom_window_options())
+	:with(settings.custom_launch_menu())
 	:configure()
