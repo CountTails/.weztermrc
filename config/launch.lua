@@ -17,11 +17,12 @@ function LauncherOptions:apply(cfg)
 	local launch_menu = {}
 	local path = self.launcher_items.binary_lookup
 	local apps = self.launcher_items.menu_entries
+	local sep = package.config:sub(1, 1)
 
 	for _, entry in ipairs(apps) do
 		for _, dir in ipairs(path) do
-			if self:is_application(dir .. "/" .. entry.args[1]) then
-				entry.args[1] = dir .. "/" .. entry.args[1]
+			if self:is_application(dir .. sep .. entry.args[1]) then
+				entry.args[1] = dir .. sep .. entry.args[1]
 				table.insert(launch_menu, entry)
 				break
 			end
