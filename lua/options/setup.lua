@@ -3,11 +3,11 @@ local options = require("utils.options")
 local theme = require("utils.theme")
 local platform = require("utils.platform")
 
-local ColorsOption = require("config.colorscheme")
-local CursorOption = require("config.cursor")
-local FontOption = require("config.typography")
-local WindowOptions = require("config.window")
-local LauncherOptions = require("config.launch")
+local ColorsOption = require("options.colorscheme")
+local CursorOption = require("options.cursor")
+local FontOption = require("options.typography")
+local WindowOptions = require("options.window")
+local LauncherOptions = require("options.launch")
 
 local M = {}
 
