@@ -4,64 +4,62 @@ local M = {}
 
 --- Returns a boolean value indicating whether the current OS running wezterm is windows
 ---@return boolean
-M.is_win = function()
+local function is_win()
 	return string.find(wezterm.target_triple, "windows") ~= nil
 end
 
 --- Returns a boolean value indicating whether the current OS running wezterm is macOS
 ---@return boolean
-M.is_mac = function()
+local function is_mac()
 	return string.find(wezterm.target_triple, "apple") ~= nil
 end
 
 --- Returns a boolean value indicating whether the current OS running wezterm is Linux
 ---@return boolean
-M.is_linux = function()
+local function is_linux()
 	return string.find(wezterm.target_triple, "linux") ~= nil
 end
 
---- Returns a boolean value indicating whether the current hardware architecture running wezterm is ARM
----@return boolean
-M.is_arm = function()
-	return string.find(wezterm.target_triple, "x86_64") ~= nil
-end
+M.os = {
+	is_win = is_win,
+	is_mac = is_mac,
+	is_linux = is_linux,
+}
 
---- Returns a boolean value indicating whether the current hardware architecture running wezterm is x86
----@return boolean
-M.is_x86 = function()
-	return string.find(wezterm.target_triple, "aarch64") ~= nil
-end
-
---- Returns the highest refresh rate of the available screens
----@return integer
-M.screen_refresh_rate = function()
-	local fps_limit = 30 -- 30 as a sensible default if there are no screen refresh rates available
-	for _, screen_info in pairs(wezterm.gui.screens().by_name) do
-		if screen_info.max_fps ~= nil then
-			fps_limit = math.max(fps_limit, screen_info.max_fps)
-		end
-	end
-	return fps_limit
-end
-
---- Returns the virtual height and width of the available screens
+--- Returns the height and width of the active screen
 ---@return integer height
 ---@return integer width
-M.screen_resolution = function()
+local function active_resolution()
 	local screens = wezterm.gui.screens()
-	return screens.virtual_height, screens.virtual_width
+	return screens.active.height, screens.active.width
 end
 
---- Returns the highest DPI effective across the available screens
+--- Returns the refresh rate of the active screen
 ---@return integer
-M.screen_density = function()
-	local dpi = 72 -- 72 as a sensible default if no effective DPI infor available
-	for _, screen_info in pairs(wezterm.gui.screens().by_name) do
-		if screen_info.effective_dpi ~= nil then
-			dpi = math.max(dpi, screen_info.effective_dpi)
-		end
+local function active_refresh_rate()
+	local DEFAULT_FPS = 30
+	local screens = wezterm.gui.screens()
+	if screens.active.max_fps ~= nil then
+		return screens.active.max_fps
 	end
-	return dpi
+	return DEFAULT_FPS
 end
+
+--- Returns the DPI of the active screen
+---@return integer
+local function active_pixel_density()
+	local DEFAULT_DPI = 72
+	local screens = wezterm.gui.screens()
+	if screens.active.effective_dpi ~= nil then
+		return screens.active.effective_dpi
+	end
+	return DEFAULT_DPI
+end
+
+M.display = {
+	resolution = active_resolution,
+	fps = active_refresh_rate,
+	dpi = active_pixel_density,
+}
 
 return M
