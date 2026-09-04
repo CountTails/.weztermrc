@@ -1,5 +1,5 @@
 local config = require("utils.init")
-local settings = require("options.setup")
+local settings = require("core.setup")
 
 return config
 	:init()
