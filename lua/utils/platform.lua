@@ -1,5 +1,8 @@
 local wezterm = require("wezterm")
 
+local DEFAULT_DPI = 72
+local DEFAULT_FPS = 30
+
 local M = {}
 
 --- Returns a boolean value indicating whether the current OS running wezterm is windows
@@ -37,7 +40,6 @@ end
 --- Returns the refresh rate of the active screen
 ---@return integer
 local function active_refresh_rate()
-	local DEFAULT_FPS = 30
 	local screens = wezterm.gui.screens()
 	if screens.active.max_fps ~= nil then
 		return screens.active.max_fps
@@ -48,7 +50,6 @@ end
 --- Returns the DPI of the active screen
 ---@return integer
 local function active_pixel_density()
-	local DEFAULT_DPI = 72
 	local screens = wezterm.gui.screens()
 	if screens.active.effective_dpi ~= nil then
 		return screens.active.effective_dpi
@@ -56,10 +57,21 @@ local function active_pixel_density()
 	return DEFAULT_DPI
 end
 
+--- Returns the font size to use in the runtime environment
+---@param base_size integer the base font size to base the computed size off of
+---@return integer
+local function calculate_scaled_fontsize(base_size)
+	local effective_dpi = active_pixel_density()
+	local desired_dpi = DEFAULT_DPI
+	local scaling_factor = desired_dpi / effective_dpi
+	return math.floor(base_size * scaling_factor)
+end
+
 M.display = {
 	resolution = active_resolution,
 	fps = active_refresh_rate,
 	dpi = active_pixel_density,
+	scale_font_size = calculate_scaled_fontsize,
 }
 
 return M
