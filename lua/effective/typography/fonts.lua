@@ -44,11 +44,11 @@ end
 --- Populates the font_dirs of the effective options table
 ---@private
 function EffectiveFontOptions:resolve_font_locations()
-	if platform.is_win() then
+	if platform.os.is_win() then
 		self.font_dirs = self._raw.windows_font_dirs
-	elseif platform.is_linux() then
+	elseif platform.os.is_linux() then
 		self.font_dirs = self._raw.linux_font_dirs
-	elseif platform.is_mac() then
+	elseif platform.os.is_mac() then
 		self.font_dirs = self._raw.macos_font_dirs
 	else
 		local err =

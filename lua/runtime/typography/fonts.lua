@@ -25,3 +25,5 @@ function ActiveFontOptions:apply(cfg)
 	cfg.font_locator = self._effective.font_loader
 	cfg.font_dirs = self._effective.font_dirs
 end
+
+return ActiveFontOptions

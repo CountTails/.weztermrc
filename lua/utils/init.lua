@@ -1,7 +1,5 @@
 local wezterm = require("wezterm")
 
----@alias ConfigOption table
-
 ---@class ConfigBuilder
 ---@field private options table
 local Config = {}
@@ -15,7 +13,7 @@ function Config:init()
 end
 
 --- Add an option to apply to the configuration
----@param opt ConfigOption option to apply to the configuration
+---@param opt BaseActiveOptions option to apply to the configuration
 ---@return ConfigBuilder
 function Config:with(opt)
 	opt:apply(self.options)

@@ -1,11 +1,4 @@
 local config = require("utils.init")
-local settings = require("core.setup")
+local settings = require("runtime.setup")
 
-return config
-	:init()
-	:with(settings.custom_colorscheme())
-	:with(settings.custom_typeface())
-	:with(settings.custom_cursor_behavior())
-	:with(settings.custom_window_options())
-	:with(settings.custom_launch_menu())
-	:configure()
+return config:init():with(settings.custom_font_settings()):configure()
