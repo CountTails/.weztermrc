@@ -1,13 +1,15 @@
 local wezterm = require("wezterm")
 local platform = require("utils.platform")
 
----@alias Font table
+local raw_font_opts = require("options.typography.fonts")
+local reference_display_opts = require("options.environment.display")
 
 ---@class EffectiveFontOptions
 ---@field font_size number the font size to use at runtime based on the base font size and display configuration
----@field font_choice Font[] the font list to use at runtime
+---@field app_font table the font table to use for application purposes
+---@field decor_font table the font table to use for decorative purposes
 ---@field font_dirs string[] directories to look up fonts at runtime
----@field font_loader "ConfigDirsOnly"|nil rule for whether locating and loading system fonts is allowed
+---@field omit_system_font_dirs boolean rule for whether locating and loading fonts from default system dirs is allowed
 ---@field private _raw RawFontOptions source for the effective table
 local EffectiveFontOptions = {}
 EffectiveFontOptions.__index = EffectiveFontOptions
@@ -24,21 +26,24 @@ end
 --- Resolves the effective loadout from the internal raw options table
 function EffectiveFontOptions:resolve()
 	self:compute_effective_font_size()
-	self:resolve_font_list()
 	self:resolve_font_locations()
-	self:allow_system_fonts()
+	self:resolve_from_config_locations_only()
+	self:resolve_fonts()
 end
 
 --- Populates the font_size field of the effective options table
----@private
-function EffectiveFontOptions:compute_effective_font_size()
-	self.font_size = platform.display.scale_font_size(self._raw.base_font_size)
+---@param width? integer the width to use for font size computation
+function EffectiveFontOptions:compute_effective_font_size(width)
+	local w = width or self._raw.base_display_width
+	local size = self._raw.base_font_size * math.sqrt(w / self._raw.base_display_width)
+	self.font_size = math.max(self._raw.min_font_size_allowed, math.min(self._raw.max_font_size_allowed, size))
 end
 
---- Populates the font choice of the effective opotions table
+--- Populates the font choices of the effective options table
 ---@private
-function EffectiveFontOptions:resolve_font_list()
-	self.font_choice = wezterm.font_with_fallback(self._raw.desired_fonts)
+function EffectiveFontOptions:resolve_fonts()
+	self.app_font = wezterm.font(self._raw.terminal_font)
+	self.decor_font = wezterm.font(self._raw.decorative_font)
 end
 
 --- Populates the font_dirs of the effective options table
@@ -60,9 +65,9 @@ end
 
 --- Populates the font_loader field of the effective options table
 ---@private
-function EffectiveFontOptions:allow_system_fonts()
-	self.font_loader = self._raw.font_locator
+function EffectiveFontOptions:resolve_from_config_locations_only()
+	self.omit_system_font_dirs = not self._raw.use_system_fonts_only
 end
 
-local _resolved = EffectiveFontOptions:from_raw(require("options.typography.fonts"))
+local _resolved = EffectiveFontOptions:from_raw(raw_font_opts)
 return _resolved
