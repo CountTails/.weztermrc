@@ -1,5 +1,7 @@
 local base = require("runtime.base")
 
+local config_dirs_only = "ConfigDirsOnly"
+
 ---@class ActiveFontOptions: BaseActiveOptions
 ---@field private _effective EffectiveFontOptions the effective table dictating what is actively applied
 local ActiveFontOptions = setmetatable({}, { __index = base })
@@ -16,14 +18,12 @@ end
 ---@param cfg table
 function ActiveFontOptions:apply(cfg)
 	cfg.font_size = self._effective.font_size
-	cfg.font = self._effective.font_choice
+	cfg.font = self._effective.app_font
 
-	if self._effective.font_loader == nil then
-		return
+	if self._effective.omit_system_font_dirs then
+		cfg.font_locator = config_dirs_only
+		cfg.font_dirs = self._effective.font_dirs
 	end
-
-	cfg.font_locator = self._effective.font_loader
-	cfg.font_dirs = self._effective.font_dirs
 end
 
 return ActiveFontOptions

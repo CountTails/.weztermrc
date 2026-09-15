@@ -1,3 +1,5 @@
+require("events")
+
 local config = require("utils.init")
 local settings = require("runtime.setup")
 
