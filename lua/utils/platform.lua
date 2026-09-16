@@ -26,4 +26,25 @@ M.os = {
 	is_linux = is_linux,
 }
 
+---@alias WindowTheme integer value representing the window theme
+local light_mode = 0
+local dark_mode = 1
+
+--- Returns the currently active window theme
+---@return WindowTheme
+local function active_window_theme()
+	if wezterm.gui then
+		if wezterm.gui.get_appearance():find("Light") then
+			return light_mode
+		end
+	end
+	return dark_mode
+end
+
+M.theme = {
+	LIGHT_MODE = light_mode,
+	DARK_MODE = dark_mode,
+	current_window_appearance = active_window_theme,
+}
+
 return M
