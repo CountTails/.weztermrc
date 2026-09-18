@@ -107,6 +107,7 @@ M.hsl_to_rgb = function(h, s, l)
 		if t < 2 / 3 then
 			return p + (q - p) * (2 / 3 - t) * 6
 		end
+		return p
 	end
 
 	local r, g, b

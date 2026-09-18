@@ -22,7 +22,7 @@ function Color:from_hex(hex)
 
 	this.hex = hex
 	this.rgb = mathutils.hex_to_rgb(hex)
-	this.hsl = mathutils.rgb_to_hsl(self.rgb.r, self.rgb.g, self.rgb.b)
+	this.hsl = mathutils.rgb_to_hsl(this.rgb.r, this.rgb.g, this.rgb.b)
 
 	return this
 end
@@ -75,20 +75,20 @@ function Color:from_hsl(h, s, l)
 	end
 
 	if s < 0 or s > 1 then
-		local err = string.format("Color:from_hsl: invalid saturation value: %d", s)
+		local err = string.format("Color:from_hsl: invalid saturation value: %f", s)
 		wezterm.log_error(err)
 		error(err)
 	end
 
-	if l < 0 or l > 0 then
-		local err = string.format("Color:from_hsl: invalid lightness value: %d", l)
+	if l < 0 or l > 1 then
+		local err = string.format("Color:from_hsl: invalid lightness value: %f", l)
 		wezterm.log_error(err)
 		error(err)
 	end
 
 	this.hsl = { h = h % 360, s = s, l = l }
 	this.rgb = mathutils.hsl_to_rgb(h, s, l)
-	this.hex = mathutils.rgb_to_hex(self.rgb.r, self.rgb.g, self.rgb.b)
+	this.hex = mathutils.rgb_to_hex(this.rgb.r, this.rgb.g, this.rgb.b)
 
 	return this
 end
