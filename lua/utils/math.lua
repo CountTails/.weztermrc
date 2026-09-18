@@ -28,7 +28,7 @@ end
 
 --- Converts a hex string representing a color into its RGB representation
 ---@param hex string the hex string representation of the color to convert
----@return table
+---@return {r:number, g:number, b:number}
 M.hex_to_rgb = function(hex)
 	hex = hex:gsub("#", "")
 	if #hex == 3 then
@@ -52,7 +52,7 @@ end
 ---@param r number the red value in the RGB color
 ---@param g number the green value in the RGB color
 ---@param b number the blue value in the RGB color
----@return table
+---@return {h:number, s:number, l:number}
 M.rgb_to_hsl = function(r, g, b)
 	r = r / 255
 	g = g / 255
@@ -86,7 +86,7 @@ end
 ---@param h number the hue value of the HSL color
 ---@param s number the saturation value of the HSL color
 ---@param l number the lightness value of the HSL color
----@return table
+---@return {r:number, g:number, b:number}
 M.hsl_to_rgb = function(h, s, l)
 	h = h % 360
 	h = h / 360
@@ -137,6 +137,13 @@ end
 ---@return string
 M.rgb_to_hex = function(r, g, b)
 	return string.format("#%02x%02x%02x", r, g, b)
+end
+
+--- Determines if the given number would fit into a the `unsigned char` datatype (1 byte)
+---@param x number
+---@return boolean
+M.bit_length_unsigned_8 = function(x)
+	return 0 <= x and x <= 255
 end
 
 return M
