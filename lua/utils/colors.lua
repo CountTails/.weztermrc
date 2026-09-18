@@ -92,3 +92,5 @@ function Color:from_hsl(h, s, l)
 
 	return this
 end
+
+return Color
