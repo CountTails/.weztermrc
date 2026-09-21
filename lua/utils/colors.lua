@@ -32,7 +32,7 @@ Pallete.__index = Pallete
 
 --- Initializes a color pallete with the given name and the colors
 ---@param name string the name of the newly constructed pallete
----@param ... Color[] the colors to include in the newly constructed pallete
+---@param ... Color the colors to include in the newly constructed pallete
 ---@return Pallete
 function Pallete:new(name, ...)
 	local this = setmetatable({ name = name }, self)
