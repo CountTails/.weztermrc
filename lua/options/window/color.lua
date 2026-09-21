@@ -1,14 +1,29 @@
 local colorutils = require("utils.colors")
 
 ---@class RawColorOptions
----@field light_mode_theme Pallete the light mode theme to use when wezterm is using a light theme
----@field dark_mode_theme Pallete the dark mode theme to use when wezterm is using a dark theme
+---@field using_builtin_schemes boolean indicates whether a builtin scheme is used or one is derived from the custom palletes
+---@field light_mode_theme string name of the colorscheme to use when wezterm is using a light theme
+---@field dark_mode_theme string name of the colorscheme to use when wezterm is using a dark theme
+---@field light_mode_pallete Pallete the light mode pallete to use when wezterm is using a light theme
+---@field dark_mode_pallete Pallete the dark mode pallete to use when wezterm is using a dark theme
 local RawColorOptions = {}
+
+--- EDIT this option to dictate whether colors are set using builtin color schemes or custom schemes
+---@type boolean
+RawColorOptions.using_builtin_schemes = false
+
+--- EDIT this option to specify the builtin scheme to use in light mode
+---@type string
+RawColorOptions.light_mode_theme = "Catppuccin Latte"
+
+--- EDIT this option to specify the builtin scheme to use in dark mode
+---@type string
+RawColorOptions.dark_mode_theme = "Catppuccin Mocha"
 
 --- EDIT this option to adjust the color theme used in light mode
 ---@type Pallete
 RawColorOptions.light_mode_theme = colorutils.Pallete:new(
-	"Catppuccin Latte",
+	"Catppuccin Latte (Modified)",
 	colorutils.Color:new("rosewater", "#dc8a78"),
 	colorutils.Color:new("flamingo", "#dd7878"),
 	colorutils.Color:new("pink", "#ea76cb"),
@@ -40,7 +55,7 @@ RawColorOptions.light_mode_theme = colorutils.Pallete:new(
 --- EDIT this option to adjust the color theme used in dark mode
 ---@type Pallete
 RawColorOptions.dark_mode_theme = colorutils.Pallete:new(
-	"Catppuccin Mocha",
+	"Catppuccin Mocha (Modified)",
 	colorutils.Color:new("rosewater", "#f5e0dc"),
 	colorutils.Color:new("flamingo", "#f2cdcd"),
 	colorutils.Color:new("pink", "#f5c2e7"),
