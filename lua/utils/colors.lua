@@ -1,96 +1,105 @@
 local wezterm = require("wezterm")
-local mathutils = require("utils.math")
 
 ---@class Color
+---@field name string the name this color can be referred as
 ---@field hex string a hexadecimal representation of the color
----@field rgb {r:number, g:number, b:number} a (r, g, b) represenation of a color
----@field hsl {h:number, s:number, l:number} a (h, s, l) represenation of a color
 local Color = {}
 Color.__index = Color
 
---- Initializes a color from the given hex value
----@param hex string
+--- Initializes a color with the given name, hex string, and optional alternative representations
+---@param name string the name to assign to the newly constructed color
+---@param hex string the hexadecimal color representation
 ---@return Color
-function Color:from_hex(hex)
-	local this = setmetatable({}, self)
+function Color:new(name, hex)
+	local this = setmetatable({ name = name }, self)
 
 	if not (hex:match("^#%x%x%x%x%x%x$") or hex:match("^#%x%x%x$")) then
-		local err = string.format("Color:from_hex: invalid color: %q", hex)
+		local err = string.format("Color:new: invalid color: %q", hex)
 		wezterm.log_error(err)
 		error(err)
 	end
 
 	this.hex = hex
-	this.rgb = mathutils.hex_to_rgb(hex)
-	this.hsl = mathutils.rgb_to_hsl(this.rgb.r, this.rgb.g, this.rgb.b)
 
 	return this
 end
 
---- Initializes a color from the given rgb value
----@param r number
----@param g number
----@param b number
----@return Color
-function Color:from_rgb(r, g, b)
-	local this = setmetatable({}, self)
+---@class Pallete
+---@field name string the name this color pallete can be referred as
+---@field shades Color[] the collection of colors in this pallete
+local Pallete = {}
+Pallete.__index = Pallete
 
-	if not mathutils.bit_length_unsigned_8(r) then
-		local err = string.format("Color:from_rgb: invalid red value: %d", r)
-		wezterm.log_error(err)
-		error(err)
-	end
-
-	if not mathutils.bit_length_unsigned_8(g) then
-		local err = string.format("Color:from_rgb: invalid green value: %d", r)
-		wezterm.log_error(err)
-		error(err)
-	end
-
-	if not mathutils.bit_length_unsigned_8(b) then
-		local err = string.format("Color:from_rgb: invalid blue value: %d", r)
-		wezterm.log_error(err)
-		error(err)
-	end
-
-	this.rgb = { r = r, g = g, b = b }
-	this.hsl = mathutils.rgb_to_hsl(r, g, b)
-	this.hex = mathutils.rgb_to_hex(r, g, b)
-
+--- Initializes a color pallete with the given name and the colors
+---@param name string the name of the newly constructed pallete
+---@param ... Color[] the colors to include in the newly constructed pallete
+---@return Pallete
+function Pallete:new(name, ...)
+	local this = setmetatable({ name = name }, self)
+	this.shades = ... or {}
 	return this
 end
 
---- Initializes a color form the given hsl value
----@param h number
----@param s number
----@param l number
----@return Color
-function Color:from_hsl(h, s, l)
-	local this = setmetatable({}, self)
-
-	if h < 0 then
-		local err = string.format("Color:from_hsl: invalid hue valud: %d", h)
-		wezterm.log_error(err)
-		error(err)
+--- Adds a color to this pallete. Returns true if the color is added successfully, otherwise false
+---@param color Color color to add
+---@return boolean
+function Pallete:add_color(color)
+	if self:has_color(color) then
+		return false
 	end
 
-	if s < 0 or s > 1 then
-		local err = string.format("Color:from_hsl: invalid saturation value: %f", s)
-		wezterm.log_error(err)
-		error(err)
-	end
-
-	if l < 0 or l > 1 then
-		local err = string.format("Color:from_hsl: invalid lightness value: %f", l)
-		wezterm.log_error(err)
-		error(err)
-	end
-
-	this.hsl = { h = h % 360, s = s, l = l }
-	this.rgb = mathutils.hsl_to_rgb(h, s, l)
-	this.hex = mathutils.rgb_to_hex(this.rgb.r, this.rgb.g, this.rgb.b)
-
-	return this
+	table.insert(self.shades, color)
+	return true
 end
 
-return Color
+--- Removes a color from this pallete by its name or hex representation. Returns true if the color is successfully removed, otherwise false
+---@param name_or_hex string the color name or hex to look for and remove
+---@return boolean
+function Pallete:remove_color(name_or_hex)
+	local exists, pos = self:has_color(name_or_hex)
+	if exists then
+		table.remove(self.shades, pos)
+		return true
+	end
+	return false
+end
+
+--- Retrieves the specified color (by name) instance from the shade collection or nil if it does not exist
+---@param color string
+---@return Color?
+function Pallete:pick_color(color)
+	local exists, pos = self:has_color(color)
+	if not exists then
+		return nil
+	end
+	return self.shades[pos]
+end
+
+--- Checks if a color already exists in the pallete
+---@param color Color|string color to check existness for
+---@return boolean, integer
+function Pallete:has_color(color)
+	local exists = false
+	local pos = -1
+	if type(color) == "string" then -- treat color as a lookup attempt by name or hex value string
+		for idx, shade in ipairs(self.shades) do
+			if shade.hex == color or shade.name == color then
+				exists = true
+				pos = idx
+			end
+		end
+	else -- treate color as a lookup attempt by Color table instance
+		for idx, shade in ipairs(self.shades) do
+			if color.name == shade.name and color.hex == shade.hex then
+				exists = true
+				pos = idx
+			end
+		end
+	end
+	return exists, pos
+end
+
+return {
+	Color = Color,
+	Pallete = Pallete,
+}
