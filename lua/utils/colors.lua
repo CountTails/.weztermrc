@@ -64,13 +64,15 @@ function Pallete:remove_color(name_or_hex)
 	return false
 end
 
---- Retrieves the specified color (by name) instance from the shade collection or nil if it does not exist
+--- Retrieves the specified color (by name) instance from the shade collection
 ---@param color string
----@return Color?
+---@return Color
 function Pallete:pick_color(color)
 	local exists, pos = self:has_color(color)
 	if not exists then
-		return nil
+		local err = string.format("Pallete:pick_color: color is not part of pallete: %q", color)
+		wezterm.log_error(err)
+		error(err)
 	end
 	return self.shades[pos]
 end
