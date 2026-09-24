@@ -35,8 +35,10 @@ Pallete.__index = Pallete
 ---@param ... Color the colors to include in the newly constructed pallete
 ---@return Pallete
 function Pallete:new(name, ...)
-	local this = setmetatable({ name = name }, self)
-	this.shades = ... or {}
+	local this = setmetatable({ name = name, shades = {} }, self)
+	for _, color in ipairs({ ... }) do
+		this:add_color(color)
+	end
 	return this
 end
 
