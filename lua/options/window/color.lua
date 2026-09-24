@@ -6,6 +6,8 @@ local colorutils = require("utils.colors")
 ---@field dark_mode_theme string name of the colorscheme to use when wezterm is using a dark theme
 ---@field light_mode_pallete Pallete the light mode pallete to use when wezterm is using a light theme
 ---@field dark_mode_pallete Pallete the dark mode pallete to use when wezterm is using a dark theme
+---@field light_mode_scheme ColorScheme the custom color scheme to use when wezterm is using a light theme
+---@field dark_mode_scheme ColorScheme the custom color scheme to use when wezterm is using a dark theme
 local RawColorOptions = {}
 
 --- EDIT this option to dictate whether colors are set using builtin color schemes or custom schemes
@@ -21,8 +23,9 @@ RawColorOptions.light_mode_theme = "Catppuccin Latte"
 RawColorOptions.dark_mode_theme = "Catppuccin Mocha"
 
 --- EDIT this option to adjust the color theme used in light mode
+---@see utils/colors.lua see the Pallete class for declaring a color pallete
 ---@type Pallete
-RawColorOptions.light_mode_theme = colorutils.Pallete:new(
+RawColorOptions.light_mode_pallete = colorutils.Pallete:new(
 	"Catppuccin Latte (Modified)",
 	colorutils.Color:new("rosewater", "#dc8a78"),
 	colorutils.Color:new("flamingo", "#dd7878"),
@@ -53,8 +56,9 @@ RawColorOptions.light_mode_theme = colorutils.Pallete:new(
 )
 
 --- EDIT this option to adjust the color theme used in dark mode
+---@see utils/colors.lua see the Pallete class for declaring a color pallete
 ---@type Pallete
-RawColorOptions.dark_mode_theme = colorutils.Pallete:new(
+RawColorOptions.dark_mode_pallete = colorutils.Pallete:new(
 	"Catppuccin Mocha (Modified)",
 	colorutils.Color:new("rosewater", "#f5e0dc"),
 	colorutils.Color:new("flamingo", "#f2cdcd"),
@@ -83,5 +87,191 @@ RawColorOptions.dark_mode_theme = colorutils.Pallete:new(
 	colorutils.Color:new("mantle", "#181825"),
 	colorutils.Color:new("crust", "#11111b")
 )
+
+--- EDIT this value to adjust the light mode custom colorscheme
+---@see utils/colors.lua for the ColorScheme class for declaring a custom colorscheme
+---@type ColorScheme
+RawColorOptions.light_mode_scheme = colorutils.Scheme
+	:builder()
+	:with_ansi_colors(
+		RawColorOptions.light_mode_pallete:pick_color("surface1"),
+		RawColorOptions.light_mode_pallete:pick_color("red"),
+		RawColorOptions.light_mode_pallete:pick_color("green"),
+		RawColorOptions.light_mode_pallete:pick_color("yellow"),
+		RawColorOptions.light_mode_pallete:pick_color("blue"),
+		RawColorOptions.light_mode_pallete:pick_color("pink"),
+		RawColorOptions.light_mode_pallete:pick_color("teal"),
+		RawColorOptions.light_mode_pallete:pick_color("subtext1")
+	)
+	:with_bright_colors(
+		RawColorOptions.light_mode_pallete:pick_color("surface2"),
+		RawColorOptions.light_mode_pallete:pick_color("red"),
+		RawColorOptions.light_mode_pallete:pick_color("green"),
+		RawColorOptions.light_mode_pallete:pick_color("yellow"),
+		RawColorOptions.light_mode_pallete:pick_color("blue"),
+		RawColorOptions.light_mode_pallete:pick_color("pink"),
+		RawColorOptions.light_mode_pallete:pick_color("teal"),
+		RawColorOptions.light_mode_pallete:pick_color("subtext0")
+	)
+	:with_contrast(
+		RawColorOptions.light_mode_pallete:pick_color("text"),
+		RawColorOptions.light_mode_pallete:pick_color("base")
+	)
+	:with_cursor_scheme(
+		RawColorOptions.light_mode_pallete:pick_color("flamingo"),
+		RawColorOptions.light_mode_pallete:pick_color("crust"),
+		RawColorOptions.light_mode_pallete:pick_color("flamingo"),
+		RawColorOptions.light_mode_pallete:pick_color("flamingo")
+	)
+	:with_selection_scheme(
+		RawColorOptions.light_mode_pallete:pick_color("text"),
+		RawColorOptions.light_mode_pallete:pick_color("surface2")
+	)
+	:with_bars_and_lines_scheme(
+		RawColorOptions.light_mode_pallete:pick_color("surface2"),
+		RawColorOptions.light_mode_pallete:pick_color("overlay0")
+	)
+	:with_extra_colors({
+		[16] = RawColorOptions.light_mode_pallete:pick_color("peach"),
+		[17] = RawColorOptions.light_mode_pallete:pick_color("rosewater"),
+	})
+	:with_tab_state_active(
+		RawColorOptions.light_mode_pallete:pick_color("crust"),
+		RawColorOptions.light_mode_pallete:pick_color("mauve"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_state_inactive(
+		RawColorOptions.light_mode_pallete:pick_color("text"),
+		RawColorOptions.light_mode_pallete:pick_color("mantle"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_state_inactive_hover(
+		RawColorOptions.light_mode_pallete:pick_color("text"),
+		RawColorOptions.light_mode_pallete:pick_color("base"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_state_new_tab(
+		RawColorOptions.light_mode_pallete:pick_color("text"),
+		RawColorOptions.light_mode_pallete:pick_color("surface0"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_state_new_tab_hover(
+		RawColorOptions.light_mode_pallete:pick_color("text"),
+		RawColorOptions.light_mode_pallete:pick_color("surface1"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_bar_scheme(
+		RawColorOptions.light_mode_pallete:pick_color("crust"),
+		RawColorOptions.light_mode_pallete:pick_color("surface0")
+	)
+	:with_visual_bell(RawColorOptions.light_mode_pallete:pick_color("surface0"))
+
+--- EDIT this value to adjust the dark mode custom colorscheme
+---@see utils/colors.lua for the ColorScheme class for declaring a custom colorscheme
+---@type ColorScheme
+RawColorOptions.dark_mode_scheme = colorutils.Scheme
+	:builder()
+	:with_ansi_colors(
+		RawColorOptions.dark_mode_pallete:pick_color("surface1"),
+		RawColorOptions.dark_mode_pallete:pick_color("red"),
+		RawColorOptions.dark_mode_pallete:pick_color("green"),
+		RawColorOptions.dark_mode_pallete:pick_color("yellow"),
+		RawColorOptions.dark_mode_pallete:pick_color("blue"),
+		RawColorOptions.dark_mode_pallete:pick_color("pink"),
+		RawColorOptions.dark_mode_pallete:pick_color("teal"),
+		RawColorOptions.dark_mode_pallete:pick_color("subtext1")
+	)
+	:with_bright_colors(
+		RawColorOptions.dark_mode_pallete:pick_color("surface2"),
+		RawColorOptions.dark_mode_pallete:pick_color("red"),
+		RawColorOptions.dark_mode_pallete:pick_color("green"),
+		RawColorOptions.dark_mode_pallete:pick_color("yellow"),
+		RawColorOptions.dark_mode_pallete:pick_color("blue"),
+		RawColorOptions.dark_mode_pallete:pick_color("pink"),
+		RawColorOptions.dark_mode_pallete:pick_color("teal"),
+		RawColorOptions.dark_mode_pallete:pick_color("subtext0")
+	)
+	:with_contrast(
+		RawColorOptions.dark_mode_pallete:pick_color("text"),
+		RawColorOptions.dark_mode_pallete:pick_color("base")
+	)
+	:with_cursor_scheme(
+		RawColorOptions.dark_mode_pallete:pick_color("flamingo"),
+		RawColorOptions.dark_mode_pallete:pick_color("crust"),
+		RawColorOptions.dark_mode_pallete:pick_color("flamingo"),
+		RawColorOptions.dark_mode_pallete:pick_color("flamingo")
+	)
+	:with_selection_scheme(
+		RawColorOptions.dark_mode_pallete:pick_color("text"),
+		RawColorOptions.dark_mode_pallete:pick_color("surface2")
+	)
+	:with_bars_and_lines_scheme(
+		RawColorOptions.dark_mode_pallete:pick_color("surface2"),
+		RawColorOptions.dark_mode_pallete:pick_color("overlay0")
+	)
+	:with_extra_colors({
+		[16] = RawColorOptions.dark_mode_pallete:pick_color("peach"),
+		[17] = RawColorOptions.dark_mode_pallete:pick_color("rosewater"),
+	})
+	:with_tab_state_active(
+		RawColorOptions.dark_mode_pallete:pick_color("crust"),
+		RawColorOptions.dark_mode_pallete:pick_color("mauve"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_state_inactive(
+		RawColorOptions.dark_mode_pallete:pick_color("text"),
+		RawColorOptions.dark_mode_pallete:pick_color("mantle"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_state_inactive_hover(
+		RawColorOptions.dark_mode_pallete:pick_color("text"),
+		RawColorOptions.dark_mode_pallete:pick_color("base"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_state_new_tab(
+		RawColorOptions.dark_mode_pallete:pick_color("text"),
+		RawColorOptions.dark_mode_pallete:pick_color("surface0"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_state_new_tab_hover(
+		RawColorOptions.dark_mode_pallete:pick_color("text"),
+		RawColorOptions.dark_mode_pallete:pick_color("surface1"),
+		"Normal",
+		false,
+		false,
+		"None"
+	)
+	:with_tab_bar_scheme(
+		RawColorOptions.dark_mode_pallete:pick_color("crust"),
+		RawColorOptions.dark_mode_pallete:pick_color("surface0")
+	)
+	:with_visual_bell(RawColorOptions.dark_mode_pallete:pick_color("surface0"))
 
 return RawColorOptions
