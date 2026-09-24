@@ -1,6 +1,6 @@
 require("events")
 
-local config = require("utils.init")
+local config = require("utils.configmanager")
 local settings = require("runtime.setup")
 
 return config
