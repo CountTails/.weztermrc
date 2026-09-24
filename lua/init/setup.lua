@@ -1,6 +1,6 @@
-local ActiveFontOpts = require("runtime.typography.fonts")
-local ActiveColorSchemeOpts = require("runtime.window.colorscheme")
-local ActiveCursorOpts = require("runtime.window.cursor")
+local ActiveFontOpts = require("init.typography.fonts")
+local ActiveColorSchemeOpts = require("init.window.colorscheme")
+local ActiveCursorOpts = require("init.window.cursor")
 
 local M = {}
 

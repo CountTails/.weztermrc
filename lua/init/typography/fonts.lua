@@ -1,4 +1,4 @@
-local base = require("runtime.base")
+local base = require("init.base")
 
 local config_dirs_only = "ConfigDirsOnly"
 

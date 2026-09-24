@@ -1,7 +1,7 @@
 require("events")
 
 local config = require("utils.configmanager")
-local settings = require("runtime.setup")
+local settings = require("init.setup")
 
 return config
 	:init()

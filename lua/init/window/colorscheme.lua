@@ -1,4 +1,4 @@
-local base = require("runtime.base")
+local base = require("init.base")
 
 ---@class ActiveColorSchemeOptions: BaseActiveOptions
 ---@field private _effective EffectiveColorSchemeOptions
