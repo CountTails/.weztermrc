@@ -1,5 +1,5 @@
 local wezterm = require("wezterm")
-local effective_font_opts = require("effective.typography.fonts")
+local effective_font_opts = require("core.typography.fonts")
 
 wezterm.on("window-resized", function(window, _)
 	local dimensions = window:get_dimensions()
