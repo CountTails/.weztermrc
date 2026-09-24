@@ -1,10 +1,9 @@
 local wezterm = require("wezterm")
 
 ---@class RawFontOptions
----@field terminal_font string the font name to use for terminal applications
----@field decorative_font string the font name to use for decorative functions
+---@field font_book table<string, string> the collection of fonts available to the configuration
 ---@field base_font_size integer the base font size to use for the wezterm configuration
----@field base_display_width integer the reference display width for the base font size
+---@field use_responsive_font_size boolean switch indicating whether the font size is static or dynamically adapts to window width
 ---@field min_font_size_allowed integer the minimum size the font should be allowed to shrink to
 ---@field max_font_size_allowed integer the maximum size the font should be allowed to grow to
 ---@field windows_font_dirs string[] list of directories to lookup fonts on a Windows system
@@ -17,9 +16,9 @@ local RawFontOptions = {}
 ---@type integer the base size font to use for the wezterm configuration
 RawFontOptions.base_font_size = 18
 
---- EDIT this value to adjust the reference display width
----@type integer the reference display width
-RawFontOptions.base_display_width = 1440
+--- EDIT this value to indicate whether font size should adjust based on window width or not
+---@type boolean
+RawFontOptions.use_responsive_font_size = true
 
 --- EDIT this value to adjust the min font size
 ---@type integer smallest font size allowed
@@ -29,13 +28,12 @@ RawFontOptions.min_font_size_allowed = 14
 ---@type integer largest font size allowed
 RawFontOptions.max_font_size_allowed = 24
 
---- EDIT this value to adjust the font family used within wezterm panes
----@type string the font family to use for terminal applications
-RawFontOptions.terminal_font = "CommitMono Nerd Font Mono"
-
---- EDIT this value to adjust the font family used for wezterm decorative purposes
----@type string the font family to use for decorative functions
-RawFontOptions.decorative_font = "Hurmit Nerd Font Mono"
+--- EDIT this value to adjust the font family names available to the wezterm configuration
+---@type table<string, string>
+RawFontOptions.font_book = {
+	terminal = "CommitMono Nerd Font",
+	decorative = "Hurmit Nerd Font Mono",
+}
 
 --- EDIT this value to adjust the rule for locating and loading fonts
 ---@type boolean true means that font dirs (specified below) will be ignored; false means to exclusively used the dirs specified below

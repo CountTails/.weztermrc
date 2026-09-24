@@ -17,8 +17,12 @@ end
 --- Applies the effective font options to the active configuration
 ---@param cfg table
 function ActiveFontOptions:apply(cfg)
+	if self._effective.fonts.terminal == nil then
+		local err = "ActiveFontOptions:apply > effective fonts does not define a terminal font to use"
+		error(err)
+	end
 	cfg.font_size = self._effective.font_size
-	cfg.font = self._effective.app_font
+	cfg.font = self._effective.fonts.terminal
 
 	if self._effective.omit_system_font_dirs then
 		cfg.font_locator = config_dirs_only
