@@ -1,5 +1,5 @@
 local ActiveFontOpts = require("init.window.typography")
-local ActiveColorSchemeOpts = require("init.window.colorscheme")
+local ActiveColorSchemeOpts = require("init.window.theme")
 local ActiveCursorOpts = require("init.window.cursor")
 
 local M = {}
@@ -13,7 +13,7 @@ end
 --- Creates the `ActiveColorSchemeOptions` derived from the effective color scheme table
 ---@return ActiveColorSchemeOptions
 M.custom_color_scheme = function()
-	return ActiveColorSchemeOpts:from_effective_table(require("core.window.colorscheme"))
+	return ActiveColorSchemeOpts:from_effective_table(require("core.window.theme"))
 end
 
 --- Creates the `ActiveCursorOptions` derived from the effective cursor options table

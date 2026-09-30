@@ -1,6 +1,6 @@
 local wezterm = require("wezterm")
 local platform = require("utils.platform")
-local raw_color_opts = require("options.window.color")
+local raw_color_opts = require("options.window.theme")
 
 ---@class EffectiveColorSchemeOptions
 ---@field private _raw RawColorOptions source for the effective table
