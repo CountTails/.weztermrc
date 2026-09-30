@@ -1,4 +1,4 @@
-local ActiveFontOpts = require("init.window.font")
+local ActiveFontOpts = require("init.window.typography")
 local ActiveColorSchemeOpts = require("init.window.colorscheme")
 local ActiveCursorOpts = require("init.window.cursor")
 
@@ -7,7 +7,7 @@ local M = {}
 --- Creates the `ActiveFontOptions` derived from the effective font options table
 ---@return ActiveFontOptions
 M.custom_font_settings = function()
-	return ActiveFontOpts:from_effective_table(require("core.window.font"))
+	return ActiveFontOpts:from_effective_table(require("core.window.typography"))
 end
 
 --- Creates the `ActiveColorSchemeOptions` derived from the effective color scheme table

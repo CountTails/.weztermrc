@@ -2,7 +2,7 @@ local wezterm = require("wezterm")
 local platform = require("utils.platform")
 local mathutils = require("utils.math")
 
-local raw_font_opts = require("options.window.font")
+local raw_font_opts = require("options.window.typography")
 local reference_display_opts = require("options.environment.display")
 
 ---@class EffectiveFontOptions
