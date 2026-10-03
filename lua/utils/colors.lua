@@ -1,5 +1,4 @@
 local wezterm = require("wezterm")
-
 ---@class Color
 ---@field name string the name this color can be referred as
 ---@field hex string a hexadecimal representation of the color
@@ -143,7 +142,7 @@ function TabStateColors:as_raw_tbl()
 	}
 end
 
----@class ColorScheme
+---@class Scheme
 ---@field private ansi Color[]
 ---@field private brights Color[]
 ---@field private background Color
@@ -165,12 +164,12 @@ end
 ---@field private tab_bar_background Color
 ---@field private tab_bar_inactive_edge Color
 ---@field private visual_bell Color
-local ColorScheme = {}
-ColorScheme.__index = ColorScheme
+local Scheme = {}
+Scheme.__index = Scheme
 
 --- Creates a proxy table to reduce color scheme construction complexity. The resulting table is empty and will not specify a color scheme (yet)
----@return ColorScheme
-function ColorScheme:builder()
+---@return Scheme
+function Scheme:builder()
 	local this = setmetatable({}, self)
 	return this
 end
@@ -184,8 +183,8 @@ end
 ---@param ansi_magenta Color
 ---@param ansi_cyan Color
 ---@param ansi_white Color
----@return ColorScheme
-function ColorScheme:with_ansi_colors(
+---@return Scheme
+function Scheme:with_ansi_colors(
 	ansi_black,
 	ansi_red,
 	ansi_green,
@@ -217,8 +216,8 @@ end
 ---@param bright_magenta Color
 ---@param bright_cyan Color
 ---@param bright_white Color
----@return ColorScheme
-function ColorScheme:with_bright_colors(
+---@return Scheme
+function Scheme:with_bright_colors(
 	bright_black,
 	bright_red,
 	bright_green,
@@ -244,8 +243,8 @@ end
 --- Populates the foreground and background in the proxy table
 ---@param fg Color
 ---@param bg Color
----@return ColorScheme
-function ColorScheme:with_contrast(fg, bg)
+---@return Scheme
+function Scheme:with_contrast(fg, bg)
 	self.foreground = fg
 	self.background = bg
 	return self
@@ -256,8 +255,8 @@ end
 ---@param fg Color
 ---@param bg Color
 ---@param border Color
----@return ColorScheme
-function ColorScheme:with_cursor_scheme(compose, fg, bg, border)
+---@return Scheme
+function Scheme:with_cursor_scheme(compose, fg, bg, border)
 	self.compose_cursor = compose
 	self.cursor_fg = fg
 	self.cursor_bg = bg
@@ -268,8 +267,8 @@ end
 --- Populates selection relevant entries in the proxy table
 ---@param fg Color
 ---@param bg Color
----@return ColorScheme
-function ColorScheme:with_selection_scheme(fg, bg)
+---@return Scheme
+function Scheme:with_selection_scheme(fg, bg)
 	self.selection_fg = fg
 	self.selection_bg = bg
 	return self
@@ -278,8 +277,8 @@ end
 --- Populates bars and lines relevant entries in the proxy table
 ---@param scrollbar Color
 ---@param split Color
----@return ColorScheme
-function ColorScheme:with_bars_and_lines_scheme(scrollbar, split)
+---@return Scheme
+function Scheme:with_bars_and_lines_scheme(scrollbar, split)
 	self.scrollbar_thumb = scrollbar
 	self.split = split
 	return self
@@ -287,8 +286,8 @@ end
 
 --- Populates the indexed entry in the proxy table
 ---@param extraneous table<integer, Color>
----@return ColorScheme
-function ColorScheme:with_extra_colors(extraneous)
+---@return Scheme
+function Scheme:with_extra_colors(extraneous)
 	self.indexed = extraneous
 	return self
 end
@@ -300,8 +299,8 @@ end
 ---@param italic? nil|boolean
 ---@param strikethrough? nil|boolean
 ---@param underline? nil|"None"|"Single"|"Double"
----@return ColorScheme
-function ColorScheme:with_tab_state_active(fg, bg, intensity, italic, strikethrough, underline)
+---@return Scheme
+function Scheme:with_tab_state_active(fg, bg, intensity, italic, strikethrough, underline)
 	self.active_tab = TabStateColors:new(fg, bg, intensity, italic, strikethrough, underline)
 	return self
 end
@@ -313,8 +312,8 @@ end
 ---@param italic? nil|boolean
 ---@param strikethrough? nil|boolean
 ---@param underline? nil|"None"|"Single"|"Double"
----@return ColorScheme
-function ColorScheme:with_tab_state_inactive(fg, bg, intensity, italic, strikethrough, underline)
+---@return Scheme
+function Scheme:with_tab_state_inactive(fg, bg, intensity, italic, strikethrough, underline)
 	self.inactive_tab = TabStateColors:new(fg, bg, intensity, italic, strikethrough, underline)
 	return self
 end
@@ -326,8 +325,8 @@ end
 ---@param italic? nil|boolean
 ---@param strikethrough? nil|boolean
 ---@param underline? nil|"None"|"Single"|"Double"
----@return ColorScheme
-function ColorScheme:with_tab_state_inactive_hover(fg, bg, intensity, italic, strikethrough, underline)
+---@return Scheme
+function Scheme:with_tab_state_inactive_hover(fg, bg, intensity, italic, strikethrough, underline)
 	self.inactive_tab_hover = TabStateColors:new(fg, bg, intensity, italic, strikethrough, underline)
 	return self
 end
@@ -339,8 +338,8 @@ end
 ---@param italic? nil|boolean
 ---@param strikethrough? nil|boolean
 ---@param underline? nil|"None"|"Single"|"Double"
----@return ColorScheme
-function ColorScheme:with_tab_state_new_tab(fg, bg, intensity, italic, strikethrough, underline)
+---@return Scheme
+function Scheme:with_tab_state_new_tab(fg, bg, intensity, italic, strikethrough, underline)
 	self.new_tab = TabStateColors:new(fg, bg, intensity, italic, strikethrough, underline)
 	return self
 end
@@ -352,8 +351,8 @@ end
 ---@param italic? nil|boolean
 ---@param strikethrough? nil|boolean
 ---@param underline? nil|"None"|"Single"|"Double"
----@return ColorScheme
-function ColorScheme:with_tab_state_new_tab_hover(fg, bg, intensity, italic, strikethrough, underline)
+---@return Scheme
+function Scheme:with_tab_state_new_tab_hover(fg, bg, intensity, italic, strikethrough, underline)
 	self.new_tab_hover = TabStateColors:new(fg, bg, intensity, italic, strikethrough, underline)
 	return self
 end
@@ -361,8 +360,8 @@ end
 --- Populates the tab bar relevant entries in the proxy table
 ---@param bg Color
 ---@param inactive Color
----@return ColorScheme
-function ColorScheme:with_tab_bar_scheme(bg, inactive)
+---@return Scheme
+function Scheme:with_tab_bar_scheme(bg, inactive)
 	self.tab_bar_background = bg
 	self.tab_bar_inactive_edge = inactive
 	return self
@@ -370,15 +369,15 @@ end
 
 --- Populates the visual bell entry in the proxy table
 ---@param bell Color
----@return ColorScheme
-function ColorScheme:with_visual_bell(bell)
+---@return Scheme
+function Scheme:with_visual_bell(bell)
 	self.visual_bell = bell
 	return self
 end
 
 --- Constructs the resulting color scheme table that can be understood by wezterm
 ---@return table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
-function ColorScheme:spec()
+function Scheme:spec()
 	local scheme = {}
 	self:populate_scheme_from_proxy(scheme)
 	return scheme
@@ -464,13 +463,13 @@ function ColorScheme:spec()
 		},
 		visual_bell = "#313244",
 	}
-  -- ]]
+  --]]
 end
 
 --- Populates a wezterm-friendly scheme table from the internal color assignments
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_scheme_from_proxy(colorscheme)
+function Scheme:populate_scheme_from_proxy(colorscheme)
 	self:populate_ansi_colors(colorscheme)
 	self:populate_bright_colors(colorscheme)
 	self:populate_contrast(colorscheme)
@@ -485,7 +484,7 @@ end
 --- Populates the ansi colors from the proxy table to the colorscheme table
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_ansi_colors(colorscheme)
+function Scheme:populate_ansi_colors(colorscheme)
 	if self.ansi == nil then
 		-- Nothing to populate
 		return
@@ -511,7 +510,7 @@ end
 --- Populates the bright colors from the proxy table to the colorscheme table
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_bright_colors(colorscheme)
+function Scheme:populate_bright_colors(colorscheme)
 	if self.brights == nil then
 		-- Nothing to populate
 		return
@@ -537,7 +536,7 @@ end
 --- Populate the color contrast from the proxy table to the colorscheme table
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_contrast(colorscheme)
+function Scheme:populate_contrast(colorscheme)
 	if self.foreground ~= nil then
 		colorscheme.foreground = self.foreground.hex
 	end
@@ -550,7 +549,7 @@ end
 --- Populate the cursor theme from the proxy table to the colorscheme table
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_cursor(colorscheme)
+function Scheme:populate_cursor(colorscheme)
 	if self.compose_cursor ~= nil then
 		colorscheme.compose_cursor = self.compose_cursor.hex
 	end
@@ -571,7 +570,7 @@ end
 --- Populate the select theme from the proxy table to the colorscheme table
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_select(colorscheme)
+function Scheme:populate_select(colorscheme)
 	if self.selection_fg ~= nil then
 		colorscheme.selection_fg = self.selection_fg.hex
 	end
@@ -584,7 +583,7 @@ end
 --- Populate the bars and lines theme from the proxy table to the colorscheme table
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_bars_and_lines(colorscheme)
+function Scheme:populate_bars_and_lines(colorscheme)
 	if self.scrollbar_thumb ~= nil then
 		colorscheme.scrollbar_thumb = self.scrollbar_thumb.hex
 	end
@@ -597,7 +596,7 @@ end
 --- Populate the indexed colors from the proxy table to the colorscheme table
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_indexed(colorscheme)
+function Scheme:populate_indexed(colorscheme)
 	if self.indexed ~= nil then
 		local indexed = {}
 		for idx, color in ipairs(self.indexed) do
@@ -610,7 +609,7 @@ end
 --- Populate the visual bell color from the proxy table to the colorscheme table
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_visual_bell(colorscheme)
+function Scheme:populate_visual_bell(colorscheme)
 	if self.visual_bell ~= nil then
 		colorscheme.visual_bell = self.visual_bell.hex
 	end
@@ -619,7 +618,7 @@ end
 --- Populate the tab bar scheme from the proxy table to the colorscheme table
 ---@param colorscheme table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
 ---@private
-function ColorScheme:populate_tab_bar(colorscheme)
+function Scheme:populate_tab_bar(colorscheme)
 	local tab_bar = {}
 
 	if self.tab_bar_background ~= nil then
@@ -653,8 +652,294 @@ function ColorScheme:populate_tab_bar(colorscheme)
 	colorscheme.tab_bar = tab_bar
 end
 
+--- Resolves the given colorv in the following manner:
+---   1) if it is already a hex color, leave it alone
+---   2) if it is string prefixed with "pallete:", attempt to resolve it by indexing pallete (if given) with the string following the prefix
+---   3) if it is table containing a "color" key, recursively apply steps 1 and 2 on that value
+---     3a) if there are additional recognizable keys to manipulate the color, apply them accordingly (see: https://wezterm.org/config/lua/color/index.html for color manipulation)
+---@param colorv string|{color:string} the color value to be resolved
+---@param pallete? ColorPallete the source of colors that may also require resolution
+---@return string
+local function resolve_color_value(colorv, pallete)
+	if type(colorv) == "string" and pcall(wezterm.color.parse, colorv) then
+		return colorv
+	end
+
+	if type(colorv) == "string" and colorv:find("^palette:%a+", 1, false) then
+		local key = string.sub(colorv, 9)
+		if pallete ~= nil and type(pallete[key]) == "string" and pcall(wezterm.color.parse, pallete[key]) then
+			return pallete[key]
+		end
+	end
+
+	if type(colorv) == "table" and type(colorv["color"]) == "string" then
+		local resolved, resolvev = pcall(resolve_color_value, colorv["color"], pallete)
+		if resolved then
+			resolvev = wezterm.color.parse(resolvev)
+			for method, arg in pairs(colorv) do
+				if method == "color" then
+					goto continue
+				end
+				if method == "adjust_hue_fixed" then
+					resolvev = resolvev:adjust_hew_fixed(arg)
+				end
+				if method == "adjust_hue_fixed_ryb" then
+					resolvev = resolvev:adjust_hue_fixed_ryb(arg)
+				end
+				if method == "complement" and arg == true then
+					resolvev = resolvev:complement()
+				end
+				if method == "complement_ryb" and arg == true then
+					resolvev = resolvev:complement_ryb()
+				end
+				if method == "darken" then
+					resolvev = resolvev:darken(arg)
+				end
+				if method == "darken_fixed" then
+					resolvev = resolvev:darken_fixed(arg)
+				end
+				if method == "desaturate" then
+					resolvev = resolvev:desaturate(arg)
+				end
+				if method == "desaturate_fixed" then
+					resolvev = resolvev:desaturate_fixed(arg)
+				end
+				if method == "lighten" then
+					resolvev = resolvev:lighten(arg)
+				end
+				if method == "lighten_fixed" then
+					resolvev = resolvev:lighten_fixed(arg)
+				end
+				if method == "saturate" then
+					resolvev = resolvev:saturate(arg)
+				end
+				if method == "saturate_fixed" then
+					resolvev = resolvev:saturate_fixed(arg)
+				end
+				::continue::
+			end
+
+			return tostring(resolvev)
+		end
+	end
+
+	error(
+		"[resolve_color_value]: colorv is not a hex color value, a pallete reference, or a programmatic color spec: "
+			.. tostring(colorv)
+	)
+end
+
+---@class ColorPallete
+---@field shades table<string|integer, 'wezterm.Color'> the collection of colors in this pallete
+---@field resolved boolean declares that the color pallete is fully resolved, meaning every shade is a valid hex color parsable by wezterm.color.parse
+local ColorPallete = {}
+ColorPallete.__index = ColorPallete
+
+--- Extracts the unique colors from an existing colorscheme and provides an index of colors utilized
+---@param scheme ColorScheme the scheme to extract a pallete from
+---@return ColorPallete
+function ColorPallete:from_colorscheme(scheme)
+	local found = {}
+	local seen = {}
+	local visited = {}
+
+	--- States whether the given string s is a hex color
+	---@param s string the string to test for color format
+	---@return boolean
+	local function is_hex(s)
+		return s:match("^#%x%x%x%x%x%x$") ~= nil
+	end
+
+	--- Walks a lua table and extracts the strings matching a hex color
+	---@param v table
+	local function walk(v)
+		if type(v) == "string" then
+			if is_hex(v) and not seen[v] then
+				found[#found + 1] = v
+				seen[v] = true
+			end
+			return
+		end
+
+		if type(v) ~= "table" or visited[v] then
+			return
+		end
+
+		visited[v] = true
+
+		for _, child in pairs(v) do
+			walk(child)
+		end
+	end
+
+	walk(scheme.colors)
+	table.sort(found)
+	return setmetatable({ shades = found, resolved = true }, self)
+end
+
+--- Creates a pallete from a list of colors
+---@param ... {name:string, color:string|'wezterm.Color'|table}
+---@return ColorPallete
+function ColorPallete:from_colors(...)
+	local shades = {}
+	local items = { ... }
+
+	for _, v in pairs(items) do
+		shades[v.name] = v.color
+	end
+
+	return setmetatable({ shades = shades, resolved = false }, self)
+end
+
+--- Resolves the color pallete to ensure every color is a valid hex color parsable by wezterm.color.parse
+function ColorPallete:resolve()
+	while not self:is_resolved() do
+		for name, color in pairs(self.shades) do
+			self.shades[name] = resolve_color_value(color, self.shades)
+		end
+	end
+end
+
+--- States whether this color pallete is resolved or not
+---@return boolean
+function ColorPallete:is_resolved()
+	for _, color in pairs(self.shades) do
+		if not pcall(wezterm.color.parse, color) then
+			return false
+		end
+	end
+	return true
+end
+
+---@class ColorScheme
+---@field colors table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>> the colorscheme declaration table that should be consumed by wezterm to create the desired appearance
+---@field metadata table<string, string> something obtained from most external colorschemes
+---@field resolved boolean declares that the color scheme if fully resolved, meaning it is ok to pass the colors field back to wezterm and get the expected appearance
+local ColorScheme = {}
+ColorScheme.__index = ColorScheme
+
+--- Creates a colorscheme instance from wezterm's builtin colors
+---@param scheme string
+---@return ColorScheme
+function ColorScheme:from_builtin(scheme)
+	local colors = wezterm.color.get_builtin_schemes()[scheme]
+	local metadata = { name = scheme, author = "Builtin" }
+
+	if colors == nil then
+		local err = string.format(
+			"[ColorScheme:from_builtin]: unknown color scheme: %s, falling back to default colors",
+			scheme
+		)
+		wezterm.log_warn(err)
+		colors = wezterm.color.get_default_colors()
+		metadata = { name = "Default", author = "Builtin" }
+	end
+
+	return setmetatable({ colors = colors, metadata = metadata }, self)
+end
+
+--- Create a color scheme instance from a base16 specification file
+---@param path string filepath to the specification file
+---@return ColorScheme
+function ColorScheme:from_base16_file(path)
+	local ok, colors, metadata = pcall(wezterm.color.load_base16_scheme, path)
+	if not ok then
+		local err = string.format(
+			"[ColorScheme:from_base16_file]: could not evaluate `%s`, falling back to default colors",
+			path
+		)
+		wezterm.log_warn(err)
+		colors = wezterm.color.get_default_colors()
+		metadata = { name = "Default", author = "Builtin" }
+	end
+
+	return setmetatable({ colors = colors, metadata = metadata }, self)
+end
+
+--- Creates a color scheme instance from a toml specification file
+---@param path string filepath to the specification file
+---@return ColorScheme
+function ColorScheme:from_toml_file(path)
+	local ok, colors, metadata = pcall(wezterm.color.load_scheme, path)
+	if not ok then
+		local err =
+			string.format("[ColorScheme:from_toml_file]: could not evaluate `%s`, falling back to default colors", path)
+		wezterm.log_warn(err)
+		colors = wezterm.color.get_default_colors()
+		metadata = { name = "Default", author = "Builtin" }
+	end
+
+	return setmetatable({ colors = colors, metadata = metadata }, self)
+end
+
+--- Creates a color scheme instance from a json specification file
+---@param path string filepath to the specification file
+---@return ColorScheme
+function ColorScheme:from_json_file(path)
+	local ok, colors, metadata = pcall(wezterm.color.load_terminal_sexy_scheme, path)
+	if not ok then
+		local err =
+			string.format("[ColorScheme:from_json_file]: could not evaluate `%s`, falling back to default colors", path)
+		wezterm.log_warn(err)
+		colors = wezterm.color.get_default_colors()
+		metadata = { name = "Default", author = "Builtin" }
+	end
+
+	return setmetatable({ colors = colors, metadata = metadata }, self)
+end
+
+---@class ColorTheme
+---@field private pallete ColorPallete
+---@field private scheme ColorScheme
+local ColorTheme = {}
+ColorTheme.__index = ColorTheme
+
+--- Creates a color theme from a builtin colorscheme
+---@param name string the name of the builtin color scheme to use
+---@return ColorTheme
+function ColorTheme:from_builtin(name)
+	local scheme = ColorScheme:from_builtin(name)
+	local pallete = ColorPallete:from_colorscheme(scheme)
+	return setmetatable({ scheme = scheme, pallete = pallete }, self)
+end
+
+--- Creates a color theme from a YAML file in base16 format
+---@param path string path to the file to parse into a base16 colorscheme
+---@return ColorTheme
+function ColorTheme:from_base16_definition(path)
+	local scheme = ColorScheme:from_base16_file(path)
+	local pallete = ColorPallete:from_colorscheme(scheme)
+	return setmetatable({ scheme = scheme, pallete = pallete }, self)
+end
+
+--- Creates a color theme from a raw TOML color scheme format
+---@param path string path to the file to parse into a wezterm colorscheme definition
+---@return ColorTheme
+function ColorTheme:from_toml_definition(path)
+	local scheme = ColorScheme:from_toml_file(path)
+	local pallete = ColorPallete:from_colorscheme(scheme)
+	return setmetatable({ scheme = scheme, pallete = pallete }, self)
+end
+
+--- Creates a color theme from a terminal.sexy exported JSON file
+---@param path string path to the file to parse a terminal.sexy colorscheme into a wezterm colorscheme definition
+---@return ColorTheme
+function ColorTheme:from_terminal_dot_sexy_definition(path)
+	local scheme = ColorScheme:from_json_file(path)
+	local pallete = ColorPallete:from_colorscheme(scheme)
+	return setmetatable({ scheme = scheme, pallete = pallete }, self)
+end
+
+--- Creates a color theme from a custom definition allowing for programmatically defined colorschemes to emerge
+---@param path string path to the file to parse the custom colorscheme into a wezterm colorscheme definition
+---@return ColorTheme
+function ColorTheme:from_custom_definition(path) end
+
 return {
 	Color = Color,
 	Pallete = Pallete,
-	Scheme = ColorScheme,
+	Scheme = Scheme,
+	Pallete2 = ColorPallete,
+	Scheme2 = ColorScheme,
+	Theme = ColorTheme,
 }
