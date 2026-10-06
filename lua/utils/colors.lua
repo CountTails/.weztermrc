@@ -652,79 +652,110 @@ function Scheme:populate_tab_bar(colorscheme)
 	colorscheme.tab_bar = tab_bar
 end
 
+--- A dispatch table for color mainpulation methods for resolving programmatic color values
+---@alias ColorTransform fun(color: 'wezterm.Color', arg: any): 'wezterm.Color'
+---@type table<string, ColorTransform>
+local color_methods = {
+	adjust_hue_fixed = function(color, arg)
+		return color:adjust_hue_fixed(arg)
+	end,
+
+	adjust_hue_fixed_ryb = function(color, arg)
+		return color:adjust_hue_fixed_ryb(arg)
+	end,
+
+	complement = function(color, arg)
+		return arg and color:complement() or color
+	end,
+
+	complement_ryb = function(color, arg)
+		return arg and color:complement_ryb() or color
+	end,
+
+	darken = function(color, arg)
+		return color:darken(arg)
+	end,
+
+	darken_fixed = function(color, arg)
+		return color:darken_fixed(arg)
+	end,
+
+	desaturate = function(color, arg)
+		return color:desaturate(arg)
+	end,
+
+	desaturate_fixed = function(color, arg)
+		return color:desaturate_fixed(arg)
+	end,
+
+	lighten = function(color, arg)
+		return color:lighten(arg)
+	end,
+
+	lighten_fixed = function(color, arg)
+		return color:lighten_fixed(arg)
+	end,
+
+	saturate = function(color, arg)
+		return color:saturate(arg)
+	end,
+
+	saturate_fixed = function(color, arg)
+		return color:saturate_fixed(arg)
+	end,
+}
+
 --- Resolves the given colorv in the following manner:
 ---   1) if it is already a hex color, leave it alone
 ---   2) if it is string prefixed with "pallete:", attempt to resolve it by indexing pallete (if given) with the string following the prefix
 ---   3) if it is table containing a "color" key, recursively apply steps 1 and 2 on that value
 ---     3a) if there are additional recognizable keys to manipulate the color, apply them accordingly (see: https://wezterm.org/config/lua/color/index.html for color manipulation)
 ---@param colorv string|{color:string} the color value to be resolved
----@param pallete? ColorPallete the source of colors that may also require resolution
+---@param pallete ColorPallete the source of colors that may also require resolution
 ---@return string
 local function resolve_color_value(colorv, pallete)
-	if type(colorv) == "string" and pcall(wezterm.color.parse, colorv) then
-		return colorv
-	end
+	if type(colorv) == "string" then
+		local key = colorv:match("^palette:(.+)$")
 
-	if type(colorv) == "string" and colorv:find("^palette:%a+", 1, false) then
-		local key = string.sub(colorv, 9)
-		if pallete ~= nil and type(pallete[key]) == "string" and pcall(wezterm.color.parse, pallete[key]) then
-			return pallete[key]
+		if key then
+			local value = pallete.shades[key]
+
+			if value == nil then
+				error("Unknown palette color: " .. key)
+			end
+
+			return resolve_color_value(value, pallete)
+		end
+
+		if pcall(wezterm.color.parse, colorv) then
+			return colorv
+		else
+			error("Invalid color sequence: " .. colorv)
 		end
 	end
 
-	if type(colorv) == "table" and type(colorv["color"]) == "string" then
-		local resolved, resolvev = pcall(resolve_color_value, colorv["color"], pallete)
-		if resolved then
-			resolvev = wezterm.color.parse(resolvev)
+	if type(colorv) == "table" and type(colorv.color) == "string" then
+		local ok, resolved = pcall(resolve_color_value, colorv.color, pallete)
+
+		if ok then
+			local color = wezterm.color.parse(resolved)
+
 			for method, arg in pairs(colorv) do
-				if method == "color" then
-					goto continue
+				if method ~= "color" then
+					local fn = color_methods[method]
+					if fn == nil then
+						error("Unknown color manipulation instruction: " .. method)
+					end
+					color = fn(color, arg)
 				end
-				if method == "adjust_hue_fixed" then
-					resolvev = resolvev:adjust_hew_fixed(arg)
-				end
-				if method == "adjust_hue_fixed_ryb" then
-					resolvev = resolvev:adjust_hue_fixed_ryb(arg)
-				end
-				if method == "complement" and arg == true then
-					resolvev = resolvev:complement()
-				end
-				if method == "complement_ryb" and arg == true then
-					resolvev = resolvev:complement_ryb()
-				end
-				if method == "darken" then
-					resolvev = resolvev:darken(arg)
-				end
-				if method == "darken_fixed" then
-					resolvev = resolvev:darken_fixed(arg)
-				end
-				if method == "desaturate" then
-					resolvev = resolvev:desaturate(arg)
-				end
-				if method == "desaturate_fixed" then
-					resolvev = resolvev:desaturate_fixed(arg)
-				end
-				if method == "lighten" then
-					resolvev = resolvev:lighten(arg)
-				end
-				if method == "lighten_fixed" then
-					resolvev = resolvev:lighten_fixed(arg)
-				end
-				if method == "saturate" then
-					resolvev = resolvev:saturate(arg)
-				end
-				if method == "saturate_fixed" then
-					resolvev = resolvev:saturate_fixed(arg)
-				end
-				::continue::
 			end
 
-			return tostring(resolvev)
+			return tostring(color)
 		end
 	end
 
 	error(
-		"[resolve_color_value]: colorv is not a hex color value, a pallete reference, or a programmatic color spec: "
+		"[resolve_color_value]: colorv is not a hex string, a palette reference, or a programmatic color table: "
 			.. tostring(colorv)
 	)
 end
@@ -795,7 +826,7 @@ end
 function ColorPallete:resolve()
 	while not self:is_resolved() do
 		for name, color in pairs(self.shades) do
-			self.shades[name] = resolve_color_value(color, self.shades)
+			self.shades[name] = resolve_color_value(color, self)
 		end
 	end
 end
