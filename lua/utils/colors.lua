@@ -705,9 +705,98 @@ local color_methods = {
 	end,
 }
 
+--- Maps a named color elements (name = color) to a named color value acceptable by a pallete
+---@param colors table<string, string|{color:string}>[]
+local function map_named_color(colors)
+	local out = {}
+	for k, v in pairs(colors) do
+		out[#out + 1] = { name = k, color = v }
+	end
+	return out
+end
+
+--- Determines whether a given value matches a 6 digit hex color code
+---@param v any the value to match against a hex code pattern (if it is a string)
+---@return boolean
+local function is_hex_string(v)
+	if type(v) == "string" then
+		return v:match("^#%x%x%x%x%x%x$") ~= nil
+	end
+	return false
+end
+
+--- Determines whether a given value is possibly a hex color code, a palette reference, or a programmatic color spec
+---@param v any the value to assess for color valueness
+---@return boolean
+local function is_color_value(v)
+	if type(v) == "string" then
+		return is_hex_string(v) or v:match("^palette:(.+)$") ~= nil
+	elseif type(v) == "table" then
+		return v.color ~= nil and is_color_value(v.color)
+	else
+		return false
+	end
+end
+
+--- Walks a Lua table for string values that satisfy a given filter function
+---@param val table the value to walk
+---@param transform? fun(v: any): any a mapping function that modifies the discovered value before yielding it
+---@param filter? fun(v: any): boolean the predicate function determining if a value should be included in the result set
+---@param unique? boolean switch to toggle uniqueness in result set
+---@param skip? string[] list of keys to avoid recursively walking
+---@return string[]
+local function walk(val, transform, filter, unique, skip)
+	local found = {}
+	local seen = {}
+	local visited = {}
+	local filterfn = filter or function(v)
+		return type(v) == "string"
+	end
+	local transformfn = transform or function(s)
+		return s
+	end
+	local skipkeys = {}
+	for _, s in pairs(skip or {}) do
+		skipkeys[s] = true
+	end
+
+	--- Iterates through the given value
+	---@param v any
+	---@return string|nil
+	local function iter(v)
+		if filterfn(v) then
+			if unique and seen[v] then
+				return nil
+			end
+			seen[v] = true
+			found[#found + 1] = transformfn(v)
+			return found[#found]
+		end
+
+		if type(v) ~= "table" or visited[v] then
+			return nil
+		end
+
+		visited[v] = true
+
+		for key, value in pairs(v) do
+			if not skip or not skipkeys[key] then
+				local newv = iter(value)
+				if newv ~= nil then
+					v[key] = newv
+				end
+			end
+		end
+		return v
+	end
+
+	iter(val)
+	return found
+end
+
 --- Resolves the given colorv in the following manner:
 ---   1) if it is already a hex color, leave it alone
----   2) if it is string prefixed with "pallete:", attempt to resolve it by indexing pallete (if given) with the string following the prefix
+---   2) if it is string prefixed with "palette:", attempt to resolve it by indexing pallete with the key following the prefix
 ---   3) if it is table containing a "color" key, recursively apply steps 1 and 2 on that value
 ---     3a) if there are additional recognizable keys to manipulate the color, apply them accordingly (see: https://wezterm.org/config/lua/color/index.html for color manipulation)
 ---@param colorv string|{color:string} the color value to be resolved
@@ -770,40 +859,7 @@ ColorPallete.__index = ColorPallete
 ---@param scheme ColorScheme the scheme to extract a pallete from
 ---@return ColorPallete
 function ColorPallete:from_colorscheme(scheme)
-	local found = {}
-	local seen = {}
-	local visited = {}
-
-	--- States whether the given string s is a hex color
-	---@param s string the string to test for color format
-	---@return boolean
-	local function is_hex(s)
-		return s:match("^#%x%x%x%x%x%x$") ~= nil
-	end
-
-	--- Walks a lua table and extracts the strings matching a hex color
-	---@param v table
-	local function walk(v)
-		if type(v) == "string" then
-			if is_hex(v) and not seen[v] then
-				found[#found + 1] = v
-				seen[v] = true
-			end
-			return
-		end
-
-		if type(v) ~= "table" or visited[v] then
-			return
-		end
-
-		visited[v] = true
-
-		for _, child in pairs(v) do
-			walk(child)
-		end
-	end
-
-	walk(scheme.colors)
+	local found = walk(scheme.colors, nil, is_hex_string, true)
 	table.sort(found)
 	return setmetatable({ shades = found, resolved = true }, self)
 end
@@ -866,7 +922,7 @@ function ColorScheme:from_builtin(scheme)
 		metadata = { name = "Default", author = "Builtin" }
 	end
 
-	return setmetatable({ colors = colors, metadata = metadata }, self)
+	return ColorScheme:new(metadata, colors)
 end
 
 --- Create a color scheme instance from a base16 specification file
@@ -884,7 +940,7 @@ function ColorScheme:from_base16_file(path)
 		metadata = { name = "Default", author = "Builtin" }
 	end
 
-	return setmetatable({ colors = colors, metadata = metadata }, self)
+	return ColorScheme:new(metadata, colors)
 end
 
 --- Creates a color scheme instance from a toml specification file
@@ -900,7 +956,7 @@ function ColorScheme:from_toml_file(path)
 		metadata = { name = "Default", author = "Builtin" }
 	end
 
-	return setmetatable({ colors = colors, metadata = metadata }, self)
+	return ColorScheme:new(metadata, colors)
 end
 
 --- Creates a color scheme instance from a json specification file
@@ -916,7 +972,40 @@ function ColorScheme:from_json_file(path)
 		metadata = { name = "Default", author = "Builtin" }
 	end
 
+	return ColorScheme:new(metadata, colors)
+end
+
+--- Creates a color scheme from the given metadata and color tables
+---@param metadata table
+---@param colors table
+---@return ColorScheme
+function ColorScheme:new(metadata, colors)
 	return setmetatable({ colors = colors, metadata = metadata }, self)
+end
+
+--- Resolves the color scheme to ensure every color is a valid hex color parsable by wezterm.color.parse
+---@param palette ColorPallete the color palette to assist with resolution
+function ColorScheme:resolve(palette)
+	local skipkeys = { "intensity", "italic", "strikethrough", "underline" }
+	local map_color = function(s)
+		return resolve_color_value(s, palette)
+	end
+	if not palette:is_resolved() then
+		palette:resolve()
+	end
+	walk(self.colors, map_color, is_color_value, false, skipkeys)
+end
+
+--- States whether this color scheme is resolved or not
+---@return boolean
+function ColorScheme:is_resolved()
+	local skipkeys = { "intensity", "italic", "strikethrough", "underline" }
+	for _, color in pairs(walk(self.colors, nil, nil, false, skipkeys)) do
+		if not pcall(wezterm.color.parse, color) then
+			return false
+		end
+	end
+	return true
 end
 
 ---@class ColorTheme
@@ -964,7 +1053,59 @@ end
 --- Creates a color theme from a custom definition allowing for programmatically defined colorschemes to emerge
 ---@param path string path to the file to parse the custom colorscheme into a wezterm colorscheme definition
 ---@return ColorTheme
-function ColorTheme:from_custom_definition(path) end
+function ColorTheme:from_custom_definition(path)
+	local file, open_err = io.open(path, "r")
+	if not file then
+		local err =
+			string.format("[ColorTheme:from_custom_definition]: could not open custom definition file: %s", open_err)
+		wezterm.log_error(err)
+		error(err)
+	end
+
+	local contents, read_err = file:read("*a")
+	file:close()
+	if not contents then
+		local err =
+			string.format("[ColorTheme:from_custom_definition]: could not read custom definition file: %s", read_err)
+		wezterm.log_error(err)
+		error(err)
+	end
+
+	local ok, data = pcall(wezterm.serde.toml_decode, contents)
+	if not ok then
+		local err = string.format(
+			"[ColorTheme:from_custom_definition]: could not parse custom definition contents: %s",
+			tostring(data)
+		)
+		wezterm.log_error(err)
+		error(err)
+	end
+
+	local palette = ColorPallete:from_colors(table.unpack(map_named_color(data.palette or {})))
+	local scheme = ColorScheme:new(data.metadata or {}, data.scheme or wezterm.color.get_default_colors())
+
+	return setmetatable({ scheme = scheme, pallete = palette }, self)
+end
+
+--- Resolves the color theme to ensure every color is a valid hex color parsable by wezterm.color.parse
+function ColorTheme:resolve()
+	self.pallete:resolve()
+	self.scheme:resolve(self.pallete)
+end
+
+--- States whether this color theme is resolved or not
+---@return boolean
+function ColorTheme:is_resolved()
+	if not self.pallete:is_resolved() then
+		return false
+	end
+
+	if not self.scheme:is_resolved() then
+		return false
+	end
+
+	return true
+end
 
 return {
 	Color = Color,
