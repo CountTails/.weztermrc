@@ -1,4 +1,5 @@
 local wezterm = require("wezterm")
+local tableutils = require("utils.table")
 
 --- A dispatch table for color mainpulation methods for resolving programmatic color values
 ---@alias ColorTransform fun(color: 'wezterm.Color', arg: any): 'wezterm.Color'
@@ -78,68 +79,12 @@ end
 ---@return boolean
 local function is_color_value(v)
 	if type(v) == "string" then
-		return is_hex_string(v) or v:match("^palette:(.+)$") ~= nil
+		return is_hex_string(v) or v:match("^(scheme|palette):(.+)$") ~= nil
 	elseif type(v) == "table" then
 		return v.color ~= nil and is_color_value(v.color)
 	else
 		return false
 	end
-end
-
---- Walks a Lua table for string values that satisfy a given filter function
----@param val table the value to walk
----@param transform? fun(v: any): any a mapping function that modifies the discovered value before yielding it
----@param filter? fun(v: any): boolean the predicate function determining if a value should be included in the result set
----@param unique? boolean switch to toggle uniqueness in result set
----@param skip? string[] list of keys to avoid recursively walking
----@return string[]
-local function walk(val, transform, filter, unique, skip)
-	local found = {}
-	local seen = {}
-	local visited = {}
-	local filterfn = filter or function(v)
-		return type(v) == "string"
-	end
-	local transformfn = transform or function(s)
-		return s
-	end
-	local skipkeys = {}
-	for _, s in pairs(skip or {}) do
-		skipkeys[s] = true
-	end
-
-	--- Iterates through the given value
-	---@param v any
-	---@return string|nil
-	local function iter(v)
-		if filterfn(v) then
-			if unique and seen[v] then
-				return nil
-			end
-			seen[v] = true
-			found[#found + 1] = transformfn(v)
-			return found[#found]
-		end
-
-		if type(v) ~= "table" or visited[v] then
-			return nil
-		end
-
-		visited[v] = true
-
-		for key, value in pairs(v) do
-			if not skip or not skipkeys[key] then
-				local newv = iter(value)
-				if newv ~= nil then
-					v[key] = newv
-				end
-			end
-		end
-		return v
-	end
-
-	iter(val)
-	return found
 end
 
 --- Resolves the given colorv in the following manner:
@@ -148,14 +93,18 @@ end
 ---   3) if it is table containing a "color" key, recursively apply steps 1 and 2 on that value
 ---     3a) if there are additional recognizable keys to manipulate the color, apply them accordingly (see: https://wezterm.org/config/lua/color/index.html for color manipulation)
 ---@param colorv string|{color:string} the color value to be resolved
----@param pallete ColorPalette the source of colors that may also require resolution
+---@param pallete ColorPalette the source of colors that resolve when colorv matches ^palette:(.+)$
+---@param scheme? ColorScheme an additional source of colors that resolve when colorv matches ^scheme:(.+)$
 ---@return string
-local function resolve_color_value(colorv, pallete)
+local function resolve_color_value(colorv, pallete, scheme)
 	if type(colorv) == "string" then
-		local key = colorv:match("^palette:(.+)$")
+		local scheme_pattern = "^scheme:(.+)$"
+		local palette_pattern = "^palette:(.+)$"
+		local key = colorv:match(palette_pattern) or colorv:match(scheme_pattern)
 
 		if key then
-			local value = pallete.shades[key]
+			local value = tableutils.deep_idx(pallete.shades, key)
+				or tableutils.deep_idx(scheme and scheme.colors or {}, key)
 
 			if value == nil then
 				error("Unknown palette color: " .. key)
@@ -206,7 +155,7 @@ ColorPalette.__index = ColorPalette
 ---@param scheme ColorScheme the scheme to extract a pallete from
 ---@return ColorPalette
 function ColorPalette:from_colorscheme(scheme)
-	local found = walk(scheme.colors, nil, is_hex_string, true)
+	local found = tableutils.walk(scheme.colors, is_hex_string, nil, true)
 	table.sort(found)
 	return setmetatable({ shades = found }, self)
 end
@@ -259,13 +208,9 @@ function ColorScheme:from_builtin(scheme)
 	local metadata = { name = scheme, author = "Builtin" }
 
 	if colors == nil then
-		local err = string.format(
-			"[ColorScheme:from_builtin]: unknown color scheme: %s, falling back to default colors",
-			scheme
-		)
-		wezterm.log_warn(err)
-		colors = wezterm.color.get_default_colors()
-		metadata = { name = "Default", author = "Builtin" }
+		local err = string.format("[ColorScheme:from_builtin]: unknown color scheme: %s", scheme)
+		wezterm.log_error(err)
+		error(err)
 	end
 
 	return ColorScheme:new(metadata, colors)
@@ -277,13 +222,10 @@ end
 function ColorScheme:from_base16_file(path)
 	local ok, colors, metadata = pcall(wezterm.color.load_base16_scheme, path)
 	if not ok then
-		local err = string.format(
-			"[ColorScheme:from_base16_file]: could not evaluate `%s`, falling back to default colors",
-			path
-		)
-		wezterm.log_warn(err)
-		colors = wezterm.color.get_default_colors()
-		metadata = { name = "Default", author = "Builtin" }
+		local err =
+			string.format("[ColorScheme:from_base16_file]: could not evaluate %q as a base16 color scheme", path)
+		wezterm.log_error(err)
+		error(err)
 	end
 
 	return ColorScheme:new(metadata, colors)
@@ -296,10 +238,9 @@ function ColorScheme:from_toml_file(path)
 	local ok, colors, metadata = pcall(wezterm.color.load_scheme, path)
 	if not ok then
 		local err =
-			string.format("[ColorScheme:from_toml_file]: could not evaluate `%s`, falling back to default colors", path)
-		wezterm.log_warn(err)
-		colors = wezterm.color.get_default_colors()
-		metadata = { name = "Default", author = "Builtin" }
+			string.format("[ColorScheme:from_toml_file]: could not evaluate %q as an external color scheme", path)
+		wezterm.log_error(err)
+		error(err)
 	end
 
 	return ColorScheme:new(metadata, colors)
@@ -312,10 +253,9 @@ function ColorScheme:from_json_file(path)
 	local ok, colors, metadata = pcall(wezterm.color.load_terminal_sexy_scheme, path)
 	if not ok then
 		local err =
-			string.format("[ColorScheme:from_json_file]: could not evaluate `%s`, falling back to default colors", path)
-		wezterm.log_warn(err)
-		colors = wezterm.color.get_default_colors()
-		metadata = { name = "Default", author = "Builtin" }
+			string.format("[ColorScheme:from_json_file]: could not evaluate %q as a terminal.sexy color scheme", path)
+		wezterm.log_error(err)
+		error(err)
 	end
 
 	return ColorScheme:new(metadata, colors)
@@ -339,14 +279,17 @@ function ColorScheme:resolve(palette)
 	if not palette:is_resolved() then
 		palette:resolve()
 	end
-	walk(self.colors, map_color, is_color_value, false, skipkeys)
+	tableutils.walk(self.colors, is_color_value, map_color, false, skipkeys)
 end
 
 --- States whether this color scheme is resolved or not
 ---@return boolean
 function ColorScheme:is_resolved()
 	local skipkeys = { "intensity", "italic", "strikethrough", "underline" }
-	for _, color in pairs(walk(self.colors, nil, nil, false, skipkeys)) do
+	local colors = tableutils.walk(self.colors, function(v)
+		return type(v) == "string"
+	end, nil, false, skipkeys)
+	for _, color in ipairs(colors) do
 		if not pcall(wezterm.color.parse, color) then
 			return false
 		end
@@ -363,6 +306,7 @@ ColorTheme.__index = ColorTheme
 --- Creates a color theme from a builtin colorscheme
 ---@param name string the name of the builtin color scheme to use
 ---@return ColorTheme
+---@private
 function ColorTheme:from_builtin(name)
 	local scheme = ColorScheme:from_builtin(name)
 	local palette = ColorPalette:from_colorscheme(scheme)
@@ -372,6 +316,7 @@ end
 --- Creates a color theme from a YAML file in base16 format
 ---@param path string path to the file to parse into a base16 colorscheme
 ---@return ColorTheme
+---@private
 function ColorTheme:from_base16_definition(path)
 	local scheme = ColorScheme:from_base16_file(path)
 	local palette = ColorPalette:from_colorscheme(scheme)
@@ -381,6 +326,7 @@ end
 --- Creates a color theme from a raw TOML color scheme format
 ---@param path string path to the file to parse into a wezterm colorscheme definition
 ---@return ColorTheme
+---@private
 function ColorTheme:from_toml_definition(path)
 	local scheme = ColorScheme:from_toml_file(path)
 	local palette = ColorPalette:from_colorscheme(scheme)
@@ -390,6 +336,7 @@ end
 --- Creates a color theme from a terminal.sexy exported JSON file
 ---@param path string path to the file to parse a terminal.sexy colorscheme into a wezterm colorscheme definition
 ---@return ColorTheme
+---@private
 function ColorTheme:from_terminal_dot_sexy_definition(path)
 	local scheme = ColorScheme:from_json_file(path)
 	local palette = ColorPalette:from_colorscheme(scheme)
@@ -399,6 +346,7 @@ end
 --- Creates a color theme from a custom definition allowing for programmatically defined colorschemes to emerge
 ---@param path string path to the file to parse the custom colorscheme into a wezterm colorscheme definition
 ---@return ColorTheme
+---@private
 function ColorTheme:from_custom_definition(path)
 	local file, open_err = io.open(path, "r")
 	if not file then
@@ -427,34 +375,61 @@ function ColorTheme:from_custom_definition(path)
 		error(err)
 	end
 
-	local palette = ColorPalette:from_colors(table.unpack(map_named_color(data.palette or {})))
-	local scheme = ColorScheme:new(data.metadata or {}, data.scheme or wezterm.color.get_default_colors())
+	if data.palette == nil or data.scheme == nil then
+		local err = "[ColorTheme:from_custom_definition: custom definition missing required fields: %q"
+		wezterm.log_error(err)
+		error(err)
+	end
+
+	local palette = ColorPalette:from_colors(table.unpack(map_named_color(data.palette)))
+	local scheme = ColorScheme:new(data.metadata or {}, data.scheme)
 
 	return setmetatable({ scheme = scheme, palette = palette }, self)
 end
 
+--- Creates a new color theme instance from the given string in the format {source_method}:{source_argument}
+--- source method can be one of: builtin, base16, terminal.sexy, external, custom
+--- source argument should be a path pointing to the source file for all except builtin, which is a string index into the builtin schemes table
+---@param scheme string the source string specifying how the theme should be created and from what source
+---@return ColorTheme
+function ColorTheme:new(scheme)
+	local method, source = scheme:match("^([^:]+):(.+)$")
+	if method == "builtin" then
+		return ColorTheme:from_builtin(source)
+	elseif method == "externalyaml" then
+		return ColorTheme:from_base16_definition(source)
+	elseif method == "externaljson" then
+		return ColorTheme:from_terminal_dot_sexy_definition(source)
+	elseif method == "externaltoml" then
+		return ColorTheme:from_toml_definition(source)
+	elseif method == "externalcustom" then
+		return ColorTheme:from_custom_definition(source)
+	else
+		local err = string.format("[ColorTheme:new]: unable to create color theme from input scheme (%s)", scheme)
+		wezterm.log_error(err)
+		error(err)
+	end
+end
+
 --- Resolves the color theme to ensure every color is a valid hex color parsable by wezterm.color.parse
-function ColorTheme:resolve()
+---@param extras? table<string, string> extra colors to resolve for this theme
+function ColorTheme:resolve(extras)
 	self.palette:resolve()
 	self.scheme:resolve(self.palette)
+	if extras ~= nil then
+		local map_color = function(s)
+			return resolve_color_value(s, self.palette, self.scheme)
+		end
+		tableutils.walk(extras, map_color, is_color_value)
+	end
 end
 
 --- States whether this color theme is resolved or not
 ---@return boolean
 function ColorTheme:is_resolved()
-	if not self.palette:is_resolved() then
-		return false
-	end
-
-	if not self.scheme:is_resolved() then
-		return false
-	end
-
-	return true
+	return self.palette:is_resolved() and self.scheme:is_resolved()
 end
 
 return {
-	Palatte = ColorPalette,
-	Scheme = ColorScheme,
 	Theme = ColorTheme,
 }
