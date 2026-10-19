@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+vars:
+  LUAUNIT_REPO: /tmp/luaunit
+
+tasks:
+  setup:
+    desc: Setup the testing luaunit testing environment
+    cmds:
+      - rm -rf {{.LUAUNIT_REPO}}
+      - git clone https://github.com/bluebird75/luaunit.git {{.LUAUNIT_REPO}}
+      - cp {{.LUAUNIT_REPO}}/luaunit.lua ./lib/luaunit.lua
+      - chmod -x ./lib/luaunit.lua
+
+  test:
+    desc: Run the unit test suite on the wezterm configuration
+    cmds:
+      - lua -e 'package.path = "./lib/?.lua;./lib/?/init.lua;../lua/?.lua;" .. package.path' main.lua --verbose
