@@ -1,21 +1,21 @@
 local base = require("init.base")
 
----@class ActiveColorSchemeOptions: BaseActiveOptions
----@field private _effective EffectiveColorSchemeOptions
-local ActiveColorSchemeOptions = setmetatable({}, { __index = base })
-ActiveColorSchemeOptions.__index = ActiveColorSchemeOptions
+---@class ActiveThemeOptions: BaseActiveOptions
+---@field private _effective EffectiveThemeOptions
+local ActiveThemeOptions = setmetatable({}, { __index = base })
+ActiveThemeOptions.__index = ActiveThemeOptions
 
 --- Creates the applicable colorscheme options table from the effective table
----@param effective EffectiveColorSchemeOptions
----@return ActiveColorSchemeOptions
-function ActiveColorSchemeOptions:from_effective_table(effective)
+---@param effective EffectiveThemeOptions
+---@return ActiveThemeOptions
+function ActiveThemeOptions:from_effective_table(effective)
 	return setmetatable({ _effective = effective }, self)
 end
 
 --- Applies the effect color scheme options to the active configuration
 ---@param cfg table
-function ActiveColorSchemeOptions:apply(cfg)
-	cfg.colors = self._effective.active_scheme
+function ActiveThemeOptions:apply(cfg)
+	cfg.colors = self._effective.active_theme:colors()
 end
 
-return ActiveColorSchemeOptions
+return ActiveThemeOptions

@@ -79,7 +79,7 @@ end
 ---@return boolean
 local function is_color_value(v)
 	if type(v) == "string" then
-		return is_hex_string(v) or v:match("^(scheme|palette):(.+)$") ~= nil
+		return is_hex_string(v) or v:match("^palette:(.+)$") ~= nil or v:match("^scheme:(.+)$") ~= nil
 	elseif type(v) == "table" then
 		return v.color ~= nil and is_color_value(v.color)
 	else
@@ -411,6 +411,13 @@ function ColorTheme:new(scheme)
 	end
 end
 
+--- Creates a new color theme instance from the default colors
+---@return ColorTheme
+function ColorTheme:default()
+	local scheme = ColorScheme:new({ name = "Default", author = "Builtin" }, wezterm.color.get_default_colors())
+	return setmetatable({ scheme = scheme, palette = nil }, self)
+end
+
 --- Resolves the color theme to ensure every color is a valid hex color parsable by wezterm.color.parse
 ---@param extras? table<string, string> extra colors to resolve for this theme
 function ColorTheme:resolve(extras)
@@ -420,7 +427,7 @@ function ColorTheme:resolve(extras)
 		local map_color = function(s)
 			return resolve_color_value(s, self.palette, self.scheme)
 		end
-		tableutils.walk(extras, map_color, is_color_value)
+		tableutils.walk(extras, is_color_value, map_color)
 	end
 end
 
@@ -428,6 +435,12 @@ end
 ---@return boolean
 function ColorTheme:is_resolved()
 	return self.palette:is_resolved() and self.scheme:is_resolved()
+end
+
+--- Retrieves the internal scheme that is processible by wezterm
+---@return table<string, table<string>|string|table<integer, string>|table<string,table<string,string>>>
+function ColorTheme:colors()
+	return self.scheme.colors
 end
 
 return {

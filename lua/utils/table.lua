@@ -43,6 +43,20 @@ M.deep_idx = function(tbl, key)
 	return v
 end
 
+--- Creates a deep copy of the given value
+---@param val any the value to copy
+---@return table
+M.deep_copy = function(val)
+	if type(val) ~= "table" then
+		return val
+	end
+	local copy = setmetatable({}, getmetatable(val))
+	for k, v in pairs(val) do
+		copy[M.deep_copy(k)] = M.deep_copy(v)
+	end
+	return copy
+end
+
 --- Walks a given table and gathers the values that pass a given filter function
 ---@param val table the table to walk
 ---@param filter? fun(v: any): boolean the predicate that determines if the discovered value is included in the result set
