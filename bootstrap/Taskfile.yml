@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+vars:
+  REPO_DIR:
+    sh: echo $(git rev-parse --show-toplevel)
+  CONFIG_DIR: /tmp/.config/wezterm
+  SOURCES_DIR: "{{.REPO_DIR}}/lua"
+
+tasks:
+  install:
+    silent: true
+    ignore_error: false
+    desc: Install the wezterm config to {{.CONFIG_DIR}}
+    cmds:
+      - echo Installing configuration from {{.SOURCES_DIR}} to {{.CONFIG_DIR}}
+      - |
+        if [[ ! -d "{{.CONFIG_DIR}}" ]]; then
+          echo "{{.CONFIG_DIR}} does not exist; creating..."
+
+          if ! mkdir -p -- "{{.CONFIG_DIR}}"; then
+            echo "Error: failed to create directory"
+            exit 1
+          fi
+        fi
+        exit 0
+      - |
+        if [ ! -z "$(ls -A {{.CONFIG_DIR}})" ]; then
+            echo "Error: directory is not empty"
+            exit 1
+        fi
+        exit 0
+      - |
+        if ! cp -r -- "{{.SOURCES_DIR}}/" "{{.CONFIG_DIR}}/"; then
+          echo "Error: could not copy configuration"
+          exit 1
+        fi
+        exit 0
+      - |
+        echo "OK: successfully installed the configuration"
+  uninstall:
+    silent: true
+    desc: Remove the wezterm config from {{.CONFIG_DIR}}
+    prompt: Remove the config directory {{.CONFIG_DIR}}?
+    cmds:
+      - echo Removing configuration {{.CONFIG_DIR}}
+      - |
+        if [[ ! -d "{{.CONFIG_DIR}}" ]]; then
+          echo "Error: directory does not exist"
+          exit 1
+        fi
+        exit 0
+      - |
+        if ! rm -rf -- "{{.CONFIG_DIR}}"; then
+          echo "Error: failed to remove directory"
+          exit 1
+        fi
+        exit 0
+      - |
+        echo "OK: configuration successfully removed"
