@@ -5,10 +5,10 @@ version: "3"
 vars:
   REPO_DIR:
     sh: echo $(git rev-parse --show-toplevel)
-  CONFIG_DIR: /tmp/.config/wezterm
+  CONFIG_DIR: "{{.HOME}}/.config/wezterm"
   SOURCES_DIR: "{{.REPO_DIR}}/lua"
   ASSET_DIR: "{{.REPO_DIR}}/assets"
-  SHARE_DIR: /tmp/.local/share/wezterm/assets
+  SHARE_DIR: "{{.HOME}}/.local/share/wezterm/assets"
 
 tasks:
   install:config:
