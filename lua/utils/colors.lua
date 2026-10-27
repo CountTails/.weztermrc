@@ -381,6 +381,10 @@ function ColorTheme:from_custom_definition(path)
 		error(err)
 	end
 
+	if data.scheme.indexed ~= nil then
+		tableutils.map_keys(data.scheme.indexed, tonumber)
+	end
+
 	local palette = ColorPalette:from_colors(table.unpack(map_named_color(data.palette)))
 	local scheme = ColorScheme:new(data.metadata or {}, data.scheme)
 

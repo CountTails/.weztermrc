@@ -1,11 +1,17 @@
----@alias ThemeVariants {light:string,dark:string}
+---@alias ThemeVariant {external: boolean, source: string}
+---@alias ThemeVariants {light:ThemeVariant,dark:ThemeVariant}
 ---@alias ThemeExtras table<string, string>
 ---@alias ThemeOptionValue string|ThemeVariants|ThemeExtras
 ---{
 ---   label = "string for select/display",
 ---		variants = { --- table mapping appearance keys to sources or a single source if no applicable variants
----			light = "construction_method:construction_argument",
----			dark = "construction_method:construction_argument",
+---			light = {
+---			  external = true|false, --- colorscheme included with wezterm?
+---			  source = "construction_method:construction_argument"
+---			},
+---			dark = {
+---			  external = true|false,
+---			  source = "construction_method:construction_argument",
 ---		},
 ---		extras {} --- mapping of additional color assignments that are not part of the color scheme (such as command palette colors or border colors)
 ---}
@@ -22,8 +28,14 @@ RawThemeOptions.schemes = {
 	{
 		label = "Catppuccin",
 		variants = {
-			light = "builtin:Catppuccin Latte",
-			dark = "builtin:Catppuccin Mocha",
+			light = {
+				external = false,
+				source = "builtin:Catppuccin Latte",
+			},
+			dark = {
+				external = false,
+				source = "builtin:Catppuccin Mocha",
+			},
 		},
 		extras = {
 			command_palette_bg_color = "scheme:background",
@@ -33,24 +45,43 @@ RawThemeOptions.schemes = {
 	{
 		label = "My Base 16 custom",
 		variants = {
-			light = "externalyaml:colors/base16-test-light.yaml",
-			dark = "externalyaml:colors/base16-test-dark.yaml",
+			light = {
+				external = true,
+				source = "externalyaml:base16-test-light.yaml",
+			},
+			dark = {
+				external = true,
+				source = "externalyaml:base16-test-dark.yaml",
+			},
 		},
 		extras = {},
 	},
 	{
 		label = "My teminal.sexy custom",
 		variants = {
-			light = "externaljson:colors/tsexy-test-light.json",
-			dark = "externaljson:colors/tsexy-test-dark.json",
+			light = {
+				external = true,
+				source = "externaljson:tsexy-test-light.json",
+			},
+			dark = {
+				external = true,
+				source = "externaljson:tsexy-test-dark.json",
+			},
 		},
 		extras = {},
 	},
 	{
 		label = "My programmatic custom",
 		variants = {
-			light = "externalcustom:colors/customtheme.toml", --- set both light and dark to the same colorscheme to disable dynamic colorschemes
-			dark = "externalcustom:colors/customtheme.toml",
+			light = {
+				external = true,
+				source = "externalcustom:customtheme.toml",
+			},
+			dark = {
+				external = true,
+				source = "externalcustom:customtheme.toml",
+			},
+			--- set both light and dark to the same colorscheme to disable dynamic colorschemes
 		},
 		extras = {
 			border_color = "palette:derived",

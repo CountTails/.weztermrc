@@ -110,4 +110,14 @@ M.walk = function(val, filter, transform, unique, skip)
 	return found
 end
 
+--- Maps the keys of a given table using the provided map function
+---@param tbl table
+---@param map fun(v: any): any
+M.map_keys = function(tbl, map)
+	for key, value in pairs(tbl) do
+		tbl[map(key)] = value
+		tbl[key] = nil
+	end
+end
+
 return M

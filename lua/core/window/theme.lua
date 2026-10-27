@@ -3,7 +3,6 @@ local platform = require("utils.platform")
 local colorutils = require("utils.colors")
 local tableutils = require("utils.table")
 local assets = require("core.environment.assets")
-local raw_color_opts = require("options.window.theme")
 
 ---@class EffectiveThemeOptions
 ---@field private _raw RawThemeOptions source for the effective table
@@ -66,11 +65,24 @@ end
 function EffectiveThemeOptions:load_theme(idx)
 	local schemespec = self._raw.schemes[idx]
 	local variant = platform.theme.is_light_mode() and schemespec.variants.light or schemespec.variants.dark
-	local theme = colorutils.Theme:new(variant)
+	local theme = self:mktheme(variant)
 	local extras = tableutils.deep_copy(schemespec.extras)
 	theme:resolve(extras)
 	return theme, extras
 end
 
-local _resolved = EffectiveThemeOptions:from_raw(raw_color_opts)
+--- Properly adjusts the colorscheme creation command (if needed)
+---@param cmd ThemeVariant
+---@return ColorTheme
+---@private
+function EffectiveThemeOptions:mktheme(cmd)
+	if cmd.external then
+		local method, relative_src = cmd.source:match("^([^:]+):(.+)$")
+		local absolute_src = platform.fs.joinpathparts(assets:colorsdir(), relative_src)
+		return colorutils.Theme:new(method .. ":" .. absolute_src)
+	end
+	return colorutils.Theme:new(cmd.source)
+end
+
+local _resolved = EffectiveThemeOptions:from_raw(require("options.window.theme"))
 return _resolved

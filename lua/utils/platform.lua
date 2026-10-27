@@ -56,4 +56,19 @@ M.theme = {
 	is_light_mode = light_appearance_active,
 }
 
+local function get_path_separator()
+	return package.config:sub(1, 1)
+end
+
+local function join_paths(...)
+	local sep = get_path_separator()
+	local parts = { ... }
+	return table.concat(parts, sep)
+end
+
+M.fs = {
+	pathsep = get_path_separator,
+	joinpathparts = join_paths,
+}
+
 return M

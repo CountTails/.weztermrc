@@ -34,5 +34,11 @@ function EffectiveAssetOptions:resolve()
 	end
 end
 
+--- Fetches the color directory with the active asset directory as the root
+---@return string
+function EffectiveAssetOptions:colorsdir()
+	return platform.fs.joinpathparts(self.active_asset_dir, "colors")
+end
+
 local _resolved = EffectiveAssetOptions:from_raw(require("options.environment.assets"))
 return _resolved
