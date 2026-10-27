@@ -7,55 +7,133 @@ vars:
     sh: echo $(git rev-parse --show-toplevel)
   CONFIG_DIR: /tmp/.config/wezterm
   SOURCES_DIR: "{{.REPO_DIR}}/lua"
+  ASSET_DIR: "{{.REPO_DIR}}/assets"
+  SHARE_DIR: /tmp/.local/share/wezterm/assets
 
 tasks:
-  install:
+  install:config:
     silent: true
     ignore_error: false
     desc: Install the wezterm config to {{.CONFIG_DIR}}
     cmds:
-      - echo Installing configuration from {{.SOURCES_DIR}} to {{.CONFIG_DIR}}
-      - |
-        if [[ ! -d "{{.CONFIG_DIR}}" ]]; then
-          echo "{{.CONFIG_DIR}} does not exist; creating..."
-
-          if ! mkdir -p -- "{{.CONFIG_DIR}}"; then
-            echo "Error: failed to create directory"
-            exit 1
-          fi
-        fi
-        exit 0
-      - |
-        if [ ! -z "$(ls -A {{.CONFIG_DIR}})" ]; then
-            echo "Error: directory is not empty"
-            exit 1
-        fi
-        exit 0
-      - |
-        if ! cp -r -- "{{.SOURCES_DIR}}/" "{{.CONFIG_DIR}}/"; then
-          echo "Error: could not copy configuration"
-          exit 1
-        fi
-        exit 0
+      - echo Installing configuration to {{.CONFIG_DIR}}
+      - task: mkdir
+        vars:
+          DIR: "{{.CONFIG_DIR}}"
+      - task: dirempty
+        vars:
+          DIR: "{{.CONFIG_DIR}}"
+      - task: copydir
+        vars:
+          SRC: "{{.SOURCES_DIR}}"
+          DST: "{{.CONFIG_DIR}}"
       - |
         echo "OK: successfully installed the configuration"
-  uninstall:
+  install:assets:
     silent: true
+    ignore_error: false
+    desc: Install the wezterm assets to {{.SHARE_DIR}}
+    cmds:
+      - echo Installing assets to {{.SHARE_DIR}}
+      - task: mkdir
+        vars:
+          DIR: "{{.SHARE_DIR}}"
+      - task: dirempty
+        vars:
+          DIR: "{{.SHARE_DIR}}"
+      - task: copydir
+        vars:
+          SRC: "{{.ASSET_DIR}}"
+          DST: "{{.SHARE_DIR}}"
+      - |
+        echo "OK: successfully installed the assets"
+  uninstall:config:
+    silent: true
+    ignore_error: false
     desc: Remove the wezterm config from {{.CONFIG_DIR}}
     prompt: Remove the config directory {{.CONFIG_DIR}}?
     cmds:
-      - echo Removing configuration {{.CONFIG_DIR}}
+      - task: clean
+        vars: { FILE_OR_DIR: "{{.CONFIG_DIR}}" }
+  uninstall:assets:
+    silent: true
+    ignore_error: false
+    desc: Remove the wezterm assets from {{.SHARE_DIR}}
+    prompt: Remove the asset directory {{.SHARE_DIR}}?
+    cmds:
+      - task: clean
+        vars:
+          FILE_OR_DIR: "{{.SHARE_DIR}}"
+  clean:
+    silent: true
+    ignore_error: false
+    desc: Remove a file or directory
+    internal: true
+    cmds:
+      - echo Removing {{.FILE_OR_DIR}}
+      - task: exists
+        vars:
+          FILE_OR_DIR: "{{.FILE_OR_DIR}}"
+      - task: delete
+        vars:
+          FILE_OR_DIR: "{{.FILE_OR_DIR}}"
       - |
-        if [[ ! -d "{{.CONFIG_DIR}}" ]]; then
-          echo "Error: directory does not exist"
+        echo "OK: {{.FILE_OR_DIR}}" successfully removed
+  exists:
+    silent: true
+    ignore_error: false
+    desc: check that a file or directory exists
+    internal: true
+    cmd: |
+      if [[ ! -d "{{.FILE_OR_DIR}}" && ! -f "{{.FILE_OR_DIR}}" ]]; then
+        echo "Error: no such file or directory: {{.FILE_OR_DIR}}"
+        exit 1
+      fi
+      exit 0
+  delete:
+    silent: true
+    desc: delete a file or directory
+    internal: true
+    cmd: |
+      if ! rm -rvf -- "{{.FILE_OR_DIR}}"; then
+        echo "Error: could not remove {{.FILE_OR_DIR}}"
+        exit 1
+      fi
+      exit 0
+  mkdir:
+    silent: true
+    ignore_error: false
+    desc: create {{.DIR}} if it does not exist
+    internal: true
+    cmd: |
+      if [[ ! -d "{{.DIR}}" ]]; then
+        echo "{{.DIR}} does not exist; creating..."
+
+        if ! mkdir -vp -- "{{.DIR}}"; then
+          echo "Error: failed to create directory"
           exit 1
         fi
-        exit 0
-      - |
-        if ! rm -rf -- "{{.CONFIG_DIR}}"; then
-          echo "Error: failed to remove directory"
+      fi
+      exit 0
+  dirempty:
+    silent: true
+    desc: ensure the {{.DIR}} is empty
+    ignore_error: false
+    internal: true
+    cmd: |
+      if [ ! -z "$(ls -A {{.DIR}})" ]; then
+          echo "Error: directory is not empty"
           exit 1
-        fi
-        exit 0
-      - |
-        echo "OK: configuration successfully removed"
+      fi
+      exit 0
+  copydir:
+    silent: true
+    desc: copy the contents of {{.SRC}} to {{.DST}}
+    internal: true
+    ignore_error: false
+    cmd: |
+      if ! cp -vr -- "{{.SRC}}/" "{{.DST}}/"; then
+        echo "Error: could not copy"
+        exit 1
+      fi
+      exit 0
