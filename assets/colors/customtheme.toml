@@ -1,5 +1,5 @@
 [metadata]
-name = "theme name"
+name = "Custom Test"
 author = "Me, obviously"
 
 [palette]
@@ -32,44 +32,44 @@ crust = "#dce0e8"
 derived = {color = "palette:mantle", darken = 0.5} # --> compiler resolves color to #e6e9ef then darkens by a factor of 0.5
 
 [scheme]
-foreground = "pallete:text" # --> compiler would resolve to "#4c4f69"
-background = "pallete:base" # --> compiler would resolve to "#eff1f5"
+foreground = "palette:text" # --> compiler would resolve to "#4c4f69"
+background = "palette:base" # --> compiler would resolve to "#eff1f5"
 compose_cursor = "#f2cdcd"
 cursor_bg = "#f5e0dc"
 cursor_border = "#f5e0dc"
 cursor_fg = "#11111b"
-selection_fg = {color = "pallete:text", complement = true, desaturate = 0.25} # compiler resolves color to "#4c4f69", computes the complement, and desaturates the complement result
-selection_bg = {color = "pallete:base", darken = 0.75, desaturate = 0.25} # compiler resolves color to "#eff1f5", darkens by a factor of 0.75 and desaturates the result
+selection_fg = {color = "palette:text", complement = true, desaturate = 0.25} # compiler resolves color to "#4c4f69", computes the complement, and desaturates the complement result
+selection_bg = {color = "palette:base", darken = 0.75, desaturate = 0.25} # compiler resolves color to "#eff1f5", darkens by a factor of 0.75 and desaturates the result
 indexed = { 16 = "#fab387", 17 = "#f5e0dc" }
-visual_bell = "pallete:surface0"
-
-[scheme.ansi]
-black = "palette:surface1"
-red = "palette:red"
-green = "palette:green"
-yellow = "palette:yellow"
-blue = "palette:blue"
-magenta = "palette:pink"
-cyan = "palette:teal"
-white = "palette:subtext1"
-
-[scheme.brights]
-black = "palette:surface2"
-red = "palette:red"
-green = "palette:green"
-yellow = "palette:yellow"
-blue = "palette:blue"
-magenta = "palette:pink"
-cyan = "palette:teal"
-white = "palette:subtext0"
+visual_bell = "palette:surface0"
+ansi = [
+"palette:surface1",
+"palette:red",
+"palette:green",
+"palette:yellow",
+"palette:blue",
+"palette:pink",
+"palette:teal",
+"palette:subtext1"
+]
+brights = [
+"palette:surface2",
+"palette:red",
+"palette:green",
+"palette:yellow",
+"palette:blue",
+"palette:pink",
+"palette:teal",
+"palette:subtext0"
+]
 
 [scheme.tab_bar]
-background = "pallete:crust"
-inactive_tab_edge = "pallete:surface0"
+background = "palette:crust"
+inactive_tab_edge = "palette:surface0"
 
 [scheme.tab_bar.active_tab]
-fg_color = "pallete:mauve"
-bg_color = "pallete:crust"
+fg_color = "palette:mauve"
+bg_color = "palette:crust"
 intensity = "Normal"
 italic = false
 strikethrough = false
