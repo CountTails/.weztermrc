@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  REPO_DIR:
+    sh: echo $(git rev-parse --show-toplevel)
+
+tasks:
+  install-config:
+    desc: Install the wezterm configuration
+    ignore_error: false
+    cmds:
+      - ./bootstrap/install.sh config
+  install-assets:
+    desc: Install the wezterm assets
+    ignore_error: false
+    cmds:
+      - ./bootstrap/install.sh assets
+  uninstall-config:
+    desc: Remove the wezterm configuration
+    ignore_error: false
+    cmds:
+      - ./bootstrap/uninstall.sh config
+  uninstall-assets:
+    desc: Remove the wezterm assets
+    ignore_error: false
+    cmds:
+      - ./bootstrap/uninstall.sh assets
+  run-tests:
+    desc: Run the unit test suite for the configuration
+    ignore_error: false
+    dir: ./test/
+    cmds:
+      - ./run.sh
